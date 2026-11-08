@@ -1,0 +1,401 @@
+{
+  "schema_version": "1.0",
+  "processes": [
+    {
+      "id": "proc",
+      "name": "Закупка запасных частей"
+    }
+  ],
+  "participants": [
+    {
+      "id": "pool",
+      "name": "Закупка",
+      "process_id": "proc"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "initiator",
+      "name": "Инициатор",
+      "process_id": "proc"
+    },
+    {
+      "id": "supply",
+      "name": "Специалист снабжения",
+      "process_id": "proc"
+    },
+    {
+      "id": "finance",
+      "name": "Финансовый контролёр",
+      "process_id": "proc"
+    },
+    {
+      "id": "manager",
+      "name": "Руководитель",
+      "process_id": "proc"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "type": "startEvent",
+      "name": "Начало",
+      "process_id": "proc",
+      "lane_id": "initiator"
+    },
+    {
+      "id": "create",
+      "type": "task",
+      "name": "Создать заявку",
+      "process_id": "proc",
+      "lane_id": "initiator"
+    },
+    {
+      "id": "check1",
+      "type": "task",
+      "name": "Проверить комплектность",
+      "process_id": "proc",
+      "lane_id": "supply"
+    },
+    {
+      "id": "xor1",
+      "type": "exclusiveGateway",
+      "name": "Комплектность?",
+      "process_id": "proc",
+      "lane_id": "supply"
+    },
+    {
+      "id": "supplement",
+      "type": "task",
+      "name": "Дополнить заявку",
+      "process_id": "proc",
+      "lane_id": "initiator"
+    },
+    {
+      "id": "check2",
+      "type": "task",
+      "name": "Повторно проверить комплектность",
+      "process_id": "proc",
+      "lane_id": "supply"
+    },
+    {
+      "id": "and1",
+      "type": "parallelGateway",
+      "name": "",
+      "process_id": "proc",
+      "lane_id": "supply"
+    },
+    {
+      "id": "check_supply",
+      "type": "task",
+      "name": "Проверить наличие и условия поставки",
+      "process_id": "proc",
+      "lane_id": "supply"
+    },
+    {
+      "id": "check_budget",
+      "type": "task",
+      "name": "Проверить бюджет",
+      "process_id": "proc",
+      "lane_id": "finance"
+    },
+    {
+      "id": "and2",
+      "type": "parallelGateway",
+      "name": "",
+      "process_id": "proc",
+      "lane_id": "manager"
+    },
+    {
+      "id": "xor2",
+      "type": "exclusiveGateway",
+      "name": "Решение?",
+      "process_id": "proc",
+      "lane_id": "manager"
+    },
+    {
+      "id": "order",
+      "type": "task",
+      "name": "Оформить заказ",
+      "process_id": "proc",
+      "lane_id": "supply"
+    },
+    {
+      "id": "end1",
+      "type": "endEvent",
+      "name": "Завершено (закупка)",
+      "process_id": "proc",
+      "lane_id": "supply"
+    },
+    {
+      "id": "notify",
+      "type": "task",
+      "name": "Получить уведомление об отказе",
+      "process_id": "proc",
+      "lane_id": "initiator"
+    },
+    {
+      "id": "end2",
+      "type": "endEvent",
+      "name": "Завершено (отказ)",
+      "process_id": "proc",
+      "lane_id": "initiator"
+    }
+  ],
+  "flows": [
+    {
+      "id": "f1",
+      "kind": "sequence",
+      "source": "start",
+      "target": "create",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "f2",
+      "kind": "sequence",
+      "source": "create",
+      "target": "check1",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "f3",
+      "kind": "sequence",
+      "source": "check1",
+      "target": "xor1",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "f4",
+      "kind": "sequence",
+      "source": "xor1",
+      "target": "supplement",
+      "name": "Недостаточно сведений",
+      "condition": "Недостаточно сведений",
+      "is_default": false
+    },
+    {
+      "id": "f5",
+      "kind": "sequence",
+      "source": "supplement",
+      "target": "check2",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "f6",
+      "kind": "sequence",
+      "source": "check2",
+      "target": "xor1",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "f7",
+      "kind": "sequence",
+      "source": "xor1",
+      "target": "and1",
+      "name": "Комплектная",
+      "condition": "Комплектная",
+      "is_default": false
+    },
+    {
+      "id": "f8",
+      "kind": "sequence",
+      "source": "and1",
+      "target": "check_supply",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "f9",
+      "kind": "sequence",
+      "source": "and1",
+      "target": "check_budget",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "f10",
+      "kind": "sequence",
+      "source": "check_supply",
+      "target": "and2",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "f11",
+      "kind": "sequence",
+      "source": "check_budget",
+      "target": "and2",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "f12",
+      "kind": "sequence",
+      "source": "and2",
+      "target": "xor2",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "f13",
+      "kind": "sequence",
+      "source": "xor2",
+      "target": "order",
+      "name": "Согласована",
+      "condition": "Согласована",
+      "is_default": false
+    },
+    {
+      "id": "f14",
+      "kind": "sequence",
+      "source": "order",
+      "target": "end1",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "f15",
+      "kind": "sequence",
+      "source": "xor2",
+      "target": "notify",
+      "name": "Отклонена",
+      "condition": "Отклонена",
+      "is_default": false
+    },
+    {
+      "id": "f16",
+      "kind": "sequence",
+      "source": "notify",
+      "target": "end2",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    }
+  ],
+  "source_text": "Инициатор создаёт заявку на закупку запасных частей для планового ремонта. Специалист снабжения проверяет комплектность заявки. Если сведений недостаточно, инициатор дополняет заявку, после чего специалист снабжения повторно проверяет комплектность. По комплектной заявке специалист снабжения проверяет наличие и условия поставки, а финансовый контролёр одновременно проверяет бюджет. После завершения обеих проверок руководитель принимает решение. Если заявка согласована, специалист снабжения оформляет заказ, и процесс завершается. Если заявка отклонена, инициатор получает уведомление об отказе, и процесс завершается без закупки.",
+  "provenance": [
+    {
+      "element_id": "start",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "create",
+      "exact_quote": "Инициатор создаёт заявку на закупку запасных частей для планового ремонта",
+      "source_start": 0,
+      "source_end": 73,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "check1",
+      "exact_quote": "Специалист снабжения проверяет комплектность заявки",
+      "source_start": 75,
+      "source_end": 126,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "xor1",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "supplement",
+      "exact_quote": "инициатор дополняет заявку",
+      "source_start": 156,
+      "source_end": 182,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "check2",
+      "exact_quote": "специалист снабжения повторно проверяет комплектность",
+      "source_start": 195,
+      "source_end": 248,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "and1",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "check_supply",
+      "exact_quote": "специалист снабжения проверяет наличие и условия поставки",
+      "source_start": 272,
+      "source_end": 329,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "check_budget",
+      "exact_quote": "финансовый контролёр одновременно проверяет бюджет",
+      "source_start": 333,
+      "source_end": 383,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "and2",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "xor2",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "order",
+      "exact_quote": "специалист снабжения оформляет заказ",
+      "source_start": 474,
+      "source_end": 510,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "end1",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "notify",
+      "exact_quote": "инициатор получает уведомление об отказе",
+      "source_start": 558,
+      "source_end": 598,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "end2",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    }
+  ],
+  "questions": [],
+  "assumptions": []
+}

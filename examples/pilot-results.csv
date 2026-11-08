@@ -1,0 +1,1 @@
+participant_id,case_id,method,model,prompt_version,start_time,end_time,elapsed_seconds,completed,accepted,critical_errors,added_elements,removed_elements,changed_elements,geometry_edits,model_attempts,input_tokens,output_tokens,usability_1_to_5,reviewer_id,notes

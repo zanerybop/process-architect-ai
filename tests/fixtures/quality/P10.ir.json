@@ -1,0 +1,276 @@
+{
+  "schema_version": "1.0",
+  "processes": [
+    {
+      "id": "proc_customer",
+      "name": "Процесс заказчика"
+    },
+    {
+      "id": "proc_supplier",
+      "name": "Процесс поставщика"
+    }
+  ],
+  "participants": [
+    {
+      "id": "pool_customer",
+      "name": "Заказчик",
+      "process_id": "proc_customer"
+    },
+    {
+      "id": "pool_supplier",
+      "name": "Поставщик",
+      "process_id": "proc_supplier"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "lane_customer",
+      "name": "Специалист снабжения",
+      "process_id": "proc_customer"
+    },
+    {
+      "id": "lane_supplier",
+      "name": "Менеджер поставщика",
+      "process_id": "proc_supplier"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "start_cust",
+      "type": "startEvent",
+      "name": "Начало",
+      "process_id": "proc_customer",
+      "lane_id": "lane_customer"
+    },
+    {
+      "id": "send_request",
+      "type": "sendTask",
+      "name": "Отправить запрос цены",
+      "process_id": "proc_customer",
+      "lane_id": "lane_customer"
+    },
+    {
+      "id": "receive_offer",
+      "type": "receiveTask",
+      "name": "Получить предложение",
+      "process_id": "proc_customer",
+      "lane_id": "lane_customer"
+    },
+    {
+      "id": "register_offer",
+      "type": "task",
+      "name": "Зарегистрировать предложение",
+      "process_id": "proc_customer",
+      "lane_id": "lane_customer"
+    },
+    {
+      "id": "end_cust",
+      "type": "endEvent",
+      "name": "Завершено",
+      "process_id": "proc_customer",
+      "lane_id": "lane_customer"
+    },
+    {
+      "id": "start_sup",
+      "type": "startEvent",
+      "name": "Начало",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_supplier"
+    },
+    {
+      "id": "receive_request",
+      "type": "receiveTask",
+      "name": "Получить запрос цены",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_supplier"
+    },
+    {
+      "id": "prepare_offer",
+      "type": "task",
+      "name": "Подготовить предложение",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_supplier"
+    },
+    {
+      "id": "send_offer",
+      "type": "sendTask",
+      "name": "Отправить предложение",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_supplier"
+    },
+    {
+      "id": "end_sup",
+      "type": "endEvent",
+      "name": "Завершено",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_supplier"
+    }
+  ],
+  "flows": [
+    {
+      "id": "flow_cust_1",
+      "kind": "sequence",
+      "source": "start_cust",
+      "target": "send_request",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow_cust_2",
+      "kind": "sequence",
+      "source": "send_request",
+      "target": "receive_offer",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow_cust_3",
+      "kind": "sequence",
+      "source": "receive_offer",
+      "target": "register_offer",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow_cust_4",
+      "kind": "sequence",
+      "source": "register_offer",
+      "target": "end_cust",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow_sup_1",
+      "kind": "sequence",
+      "source": "start_sup",
+      "target": "receive_request",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow_sup_2",
+      "kind": "sequence",
+      "source": "receive_request",
+      "target": "prepare_offer",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow_sup_3",
+      "kind": "sequence",
+      "source": "prepare_offer",
+      "target": "send_offer",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow_sup_4",
+      "kind": "sequence",
+      "source": "send_offer",
+      "target": "end_sup",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "msg_request",
+      "kind": "message",
+      "source": "send_request",
+      "target": "receive_request",
+      "name": "Запрос цены",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "msg_offer",
+      "kind": "message",
+      "source": "send_offer",
+      "target": "receive_offer",
+      "name": "Предложение",
+      "condition": null,
+      "is_default": false
+    }
+  ],
+  "source_text": "Заказчик и поставщик — самостоятельные организации с отдельными процессами. В процессе заказчика специалист снабжения отправляет запрос цены поставщику, получает предложение и регистрирует его, затем завершает процесс. Процесс поставщика начинается с получения запроса; менеджер поставщика готовит предложение, отправляет его заказчику и завершает свой процесс. Покажите обмен запросом и предложением между организациями.",
+  "provenance": [
+    {
+      "element_id": "start_cust",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "send_request",
+      "exact_quote": "специалист снабжения отправляет запрос цены поставщику",
+      "source_start": 97,
+      "source_end": 151,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "receive_offer",
+      "exact_quote": "получает предложение",
+      "source_start": 153,
+      "source_end": 173,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "register_offer",
+      "exact_quote": "регистрирует его",
+      "source_start": 176,
+      "source_end": 192,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "end_cust",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "start_sup",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "receive_request",
+      "exact_quote": "Процесс поставщика начинается с получения запроса",
+      "source_start": 219,
+      "source_end": 268,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "prepare_offer",
+      "exact_quote": "менеджер поставщика готовит предложение",
+      "source_start": 270,
+      "source_end": 309,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "send_offer",
+      "exact_quote": "отправляет его заказчику",
+      "source_start": 311,
+      "source_end": 335,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "end_sup",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    }
+  ],
+  "questions": [],
+  "assumptions": []
+}

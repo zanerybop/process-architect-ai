@@ -1,0 +1,11 @@
+# Ручная синтетическая fixture: не результат LLM.
+bpmn.process(id="p01", name="Линейная проверка заявки")
+bpmn.pool(id="p01_pool", name="Обработка заявки", process_id="p01")
+bpmn.lane(id="p01_manager", process_id="p01", name="Менеджер")
+bpmn.start(id="p01_start", process_id="p01", lane_id="p01_manager", name="Заявка поступила")
+bpmn.task(id="p01_check", process_id="p01", lane_id="p01_manager", name="Проверить заявку", source_quote="менеджер проверяет заявку")
+bpmn.task(id="p01_register", process_id="p01", lane_id="p01_manager", name="Зарегистрировать заявку в журнале", source_quote="регистрирует её в журнале")
+bpmn.end(id="p01_end", process_id="p01", lane_id="p01_manager", name="Обработка завершена")
+bpmn.flow(id="p01_f1", source="p01_start", target="p01_check")
+bpmn.flow(id="p01_f2", source="p01_check", target="p01_register")
+bpmn.flow(id="p01_f3", source="p01_register", target="p01_end")

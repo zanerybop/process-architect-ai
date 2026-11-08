@@ -1,0 +1,432 @@
+{
+  "version": "document-benchmark-1",
+  "created_before_live_run": "2026-10-04",
+  "purpose": "12 фиксированных описаний, два последовательных прохода. Проверка конкретных свойств XML; не полная экспертная оценка смысла.",
+  "provenance": "Авторский корпус создан до этой серии. DB01–DB04: новые естественные бизнес-описания; DB05–DB10: новые домены, явные требования к расширенной нотации; DB11–DB12: намеренно неполный вход. Ни описание, ни код примера цифрового архива не используются. Корпус не является внешним слепым тестом.",
+  "cases": [
+    {
+      "id": "DB01",
+      "group": "new_domain",
+      "input_style": "business_natural",
+      "title": "Возврат прокатного оборудования: XOR",
+      "expected_status": "ready",
+      "text": "Сотрудник проката принимает возвращённый проектор и проверяет его исправность. Если проектор исправен, этот же сотрудник возвращает залог клиенту и процесс завершается. Если проектор неисправен, этот же сотрудник составляет акт повреждения и процесс завершается без возврата залога. Это взаимоисключающие исходы одной проверки. В диаграмме нужны начальное событие, исполнитель Сотрудник проката и оба конечных исхода.",
+      "properties": [
+        {
+          "id": "xor",
+          "kind": "count",
+          "tag": "exclusiveGateway",
+          "min": 1
+        },
+        {
+          "id": "return_deposit",
+          "kind": "action",
+          "pattern": "возврат.*залог|верн.*залог|вернуть.*залог|возвращ.*залог",
+          "role_pattern": "сотрудник.*прокат"
+        },
+        {
+          "id": "damage_act",
+          "kind": "action",
+          "pattern": "акт.*поврежден|поврежден.*акт",
+          "role_pattern": "сотрудник.*прокат"
+        },
+        {
+          "id": "exclusive_outcomes",
+          "kind": "exclusive_branches",
+          "branches": [
+            "возврат.*залог|верн.*залог|вернуть.*залог|возвращ.*залог",
+            "акт.*поврежден|поврежден.*акт"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "DB02",
+      "group": "new_domain",
+      "input_style": "business_natural",
+      "title": "Лаборатория: параллельные исследования",
+      "expected_status": "ready",
+      "text": "Лаборант регистрирует образец воды. Затем два исследования выполняются параллельно: химик измеряет кислотность, микробиолог проверяет бактериальную загрязнённость. Только после завершения обоих исследований заведующий лабораторией утверждает протокол. Далее процесс завершается. Покажите всех четырёх исполнителей в дорожках одного процесса, явное начало, параллельное разделение и синхронизацию перед утверждением.",
+      "properties": [
+        {
+          "id": "and_split_join",
+          "kind": "count",
+          "tag": "parallelGateway",
+          "min": 2
+        },
+        {
+          "id": "chemist_role",
+          "kind": "action",
+          "pattern": "кислотност",
+          "role_pattern": "химик"
+        },
+        {
+          "id": "microbiologist_role",
+          "kind": "action",
+          "pattern": "бактериал",
+          "role_pattern": "микробиолог"
+        },
+        {
+          "id": "join_before_approval",
+          "kind": "parallel_join",
+          "branches": [
+            "кислотност",
+            "бактериал"
+          ],
+          "after": "утверж|утверд"
+        }
+      ]
+    },
+    {
+      "id": "DB03",
+      "group": "new_domain",
+      "input_style": "business_natural",
+      "title": "Ремонт велосипеда: цикл",
+      "expected_status": "ready",
+      "text": "Механик принимает велосипед, регулирует тормоза и проводит испытание. Если испытание не пройдено, механик повторяет регулировку тормозов и затем снова проводит испытание. Этот цикл повторяется до успешного испытания. После успешного испытания механик выдаёт велосипед владельцу, и процесс заканчивается. Все действия выполняет один механик; выдачи до успешного испытания нет. На схеме нужно показать возврат к регулировке, а не вторую независимую работу.",
+      "properties": [
+        {
+          "id": "cycle_present",
+          "kind": "cycle",
+          "expected": true
+        },
+        {
+          "id": "xor",
+          "kind": "count",
+          "tag": "exclusiveGateway",
+          "min": 1
+        },
+        {
+          "id": "repair_role",
+          "kind": "action",
+          "pattern": "регулир|регулиров",
+          "role_pattern": "механик"
+        },
+        {
+          "id": "test_before_release",
+          "kind": "order",
+          "before": "испытан",
+          "after": "выда|выдать"
+        }
+      ]
+    },
+    {
+      "id": "DB04",
+      "group": "collaboration",
+      "input_style": "business_natural",
+      "title": "Поставщик и магазин: обмен сообщениями",
+      "expected_status": "ready",
+      "text": "Покажите взаимодействие двух организаций: Магазин и Поставщик. В Магазине менеджер формирует заказ, отправляет сообщение «Заказ» Поставщику, ожидает сообщение «Подтверждение», после получения регистрирует подтверждение и завершает процесс. У Поставщика оператор получает сообщение «Заказ», проверяет остаток, отправляет Магазину сообщение «Подтверждение» и завершает процесс. Начало обоих процессов явно показано. Каждая организация выполняет собственный процесс; взаимодействие между ними происходит через эти два сообщения.",
+      "properties": [
+        {
+          "id": "two_pools",
+          "kind": "count",
+          "tag": "participant",
+          "min": 2,
+          "max": 2
+        },
+        {
+          "id": "two_messages",
+          "kind": "count",
+          "tag": "messageFlow",
+          "min": 2
+        },
+        {
+          "id": "stock_check",
+          "kind": "action",
+          "pattern": "остат",
+          "role_pattern": "оператор|поставщик"
+        },
+        {
+          "id": "pool_isolation",
+          "kind": "sequence_scope"
+        }
+      ]
+    },
+    {
+      "id": "DB05",
+      "group": "new_domain",
+      "title": "Командировка: вложенная проверка и таймер",
+      "expected_status": "ready",
+      "text": "Координатор начинает оформление командировки. В раскрытом подпроцессе «Проверить командировку» есть вложенный раскрытый подпроцесс «Проверить документы»: начало, задача координатора «Сверить паспорт», завершение. Затем в наружном подпроцессе координатор согласует даты, и наружный подпроцесс завершается. На его границе установлен прерывающий таймер длительностью ровно 2 часа. При нормальном завершении координатор регистрирует командировку и завершает основной процесс. По таймеру наружный подпроцесс прекращается, координатор уведомляет сотрудника о просрочке, и основной процесс завершается. Таймер оформите boundaryEvent с cancelActivity=true и timeDuration PT2H.",
+      "properties": [
+        {
+          "id": "nested_subprocess",
+          "kind": "nested",
+          "tag": "subProcess",
+          "ancestor": "subProcess"
+        },
+        {
+          "id": "timer_duration",
+          "kind": "text",
+          "tag": "timeDuration",
+          "pattern": "^PT2H$"
+        },
+        {
+          "id": "interrupting_timer",
+          "kind": "boundary",
+          "definition": "timerEventDefinition",
+          "host_tag": "subProcess",
+          "interrupting": true
+        },
+        {
+          "id": "timeout_action",
+          "kind": "action",
+          "pattern": "уведом",
+          "role_pattern": "координатор"
+        }
+      ],
+      "input_style": "notation_directed"
+    },
+    {
+      "id": "DB06",
+      "group": "new_domain",
+      "title": "Запись на сеанс: транзакция и компенсация",
+      "expected_status": "ready",
+      "text": "Сервис записи начинает процесс с BPMN-транзакции «Оформить сеанс». Внутри транзакции сервис резервирует время, затем оператор решает: подтвердить запись или отменить. Подтверждение ведёт к обычному завершению транзакции; после него сервис отправляет талон и завершает основной процесс. Отмена ведёт к конечному событию Cancel внутри транзакции. На завершённой задаче «Резервировать время» задано граничное событие Compensation; оно связано направленной association с задачей сервиса «Освободить время», у которой isForCompensation=true и нет обычных sequence flow. На границе транзакции находится Cancel boundaryEvent: после компенсации сервис отправляет уведомление об отмене и завершает основной процесс. Начало основной схемы и транзакции показывается явно.",
+      "properties": [
+        {
+          "id": "transaction",
+          "kind": "count",
+          "tag": "transaction",
+          "min": 1
+        },
+        {
+          "id": "cancel_end_and_boundary",
+          "kind": "count",
+          "tag": "cancelEventDefinition",
+          "min": 2
+        },
+        {
+          "id": "compensation_association",
+          "kind": "compensation",
+          "host_pattern": "резерв",
+          "handler_pattern": "освобод"
+        },
+        {
+          "id": "cancel_boundary",
+          "kind": "boundary",
+          "definition": "cancelEventDefinition",
+          "host_tag": "transaction",
+          "interrupting": true
+        }
+      ],
+      "input_style": "notation_directed"
+    },
+    {
+      "id": "DB07",
+      "group": "new_domain",
+      "title": "Выставка: экземпляры, ad-hoc и событие",
+      "expected_status": "ready",
+      "text": "Куратор выставки начинает процесс и выполняет параллельную многоэкземплярную задачу «Проверить экспонат»: ровно три экземпляра, требуется завершение всех. Затем куратор выполняет ad-hoc подпроцесс «Подготовить зал», внутри которого без установленного порядка и параллельно размещает таблички и проверяет освещение. Этот подпроцесс завершается только когда обе работы выполнены; незавершённые экземпляры не отменяются. После него основной процесс завершается. Пока основной процесс работает, сообщение «Срочное изменение» запускает непрерывающий событийный подпроцесс: сервис регистрирует изменение и завершает только событийный экземпляр. Нужны multiInstanceLoopCharacteristics с loopCardinality=3, adHocSubProcess, triggeredByEvent=true, message startEvent с isInterrupting=false.",
+      "properties": [
+        {
+          "id": "mi_cardinality",
+          "kind": "text",
+          "tag": "loopCardinality",
+          "pattern": "^3$"
+        },
+        {
+          "id": "mi_parallel",
+          "kind": "attribute",
+          "tag": "multiInstanceLoopCharacteristics",
+          "attribute": "isSequential",
+          "value": "false",
+          "default": "false"
+        },
+        {
+          "id": "ad_hoc",
+          "kind": "count",
+          "tag": "adHocSubProcess",
+          "min": 1
+        },
+        {
+          "id": "event_subprocess",
+          "kind": "attribute",
+          "tag": "subProcess",
+          "attribute": "triggeredByEvent",
+          "value": "true"
+        },
+        {
+          "id": "noninterrupting_message_start",
+          "kind": "event_start",
+          "definition": "messageEventDefinition",
+          "interrupting": false
+        }
+      ],
+      "input_style": "notation_directed"
+    },
+    {
+      "id": "DB08",
+      "group": "new_domain",
+      "title": "Юрист: данные, хранилище и исполнитель",
+      "expected_status": "ready",
+      "text": "Юрист начинает проверку договора. Пользовательская задача «Проверить договор» получает объект данных «Договор.pdf» в состоянии «Черновик» и сохраняет результат в хранилище «Реестр договоров». У задачи явно заданы входной и выходной параметры типа строка, inputSet, outputSet и соответствующие входная и выходная data associations. Исполнитель задан ресурсом «Юрист» через potentialOwner; дорожка юриста допустима дополнительно. Задача связана с текстовой аннотацией «Исходный файл не изменяется». После задачи процесс завершается. Data associations не являются sequence flow.",
+      "properties": [
+        {
+          "id": "input_association",
+          "kind": "count",
+          "tag": "dataInputAssociation",
+          "min": 1
+        },
+        {
+          "id": "output_association",
+          "kind": "count",
+          "tag": "dataOutputAssociation",
+          "min": 1
+        },
+        {
+          "id": "input_set",
+          "kind": "count",
+          "tag": "inputSet",
+          "min": 1
+        },
+        {
+          "id": "output_set",
+          "kind": "count",
+          "tag": "outputSet",
+          "min": 1
+        },
+        {
+          "id": "resource_assignment",
+          "kind": "count",
+          "tag": "potentialOwner",
+          "min": 1
+        },
+        {
+          "id": "document_name",
+          "kind": "named",
+          "tags": [
+            "dataObject",
+            "dataObjectReference"
+          ],
+          "pattern": "Договор\\.pdf"
+        },
+        {
+          "id": "data_store",
+          "kind": "named",
+          "tags": [
+            "dataStore",
+            "dataStoreReference"
+          ],
+          "pattern": "Реестр договоров"
+        }
+      ],
+      "input_style": "notation_directed"
+    },
+    {
+      "id": "DB09",
+      "group": "new_domain",
+      "title": "Страхование: хореография",
+      "expected_status": "ready",
+      "text": "Создайте BPMN choreography diagram страхового запроса, с явными начальным и конечным событиями. Участники: Страхователь и Страховщик. Сначала choreographyTask «Передать заявление»: инициатор Страхователь, он отправляет Страховщику сообщение «Заявление». Затем choreographyTask «Передать решение»: инициатор Страховщик, он отправляет Страхователю сообщение «Решение». Эти две задачи идут последовательно от начала к концу. В обеих задачах должны быть participantRef обоих участников, initiatingParticipantRef и messageFlowRef; участники отображаются полосами задач. Это именно choreography, без замены обычным process или задачами в пулах.",
+      "properties": [
+        {
+          "id": "choreography",
+          "kind": "count",
+          "tag": "choreography",
+          "min": 1
+        },
+        {
+          "id": "two_choreography_tasks",
+          "kind": "count",
+          "tag": "choreographyTask",
+          "min": 2,
+          "max": 2
+        },
+        {
+          "id": "application_initiator",
+          "kind": "choreography_task",
+          "pattern": "заявлен",
+          "initiator": "Страхователь",
+          "message": "Заявление"
+        },
+        {
+          "id": "decision_initiator",
+          "kind": "choreography_task",
+          "pattern": "решени",
+          "initiator": "Страховщик",
+          "message": "Решение"
+        },
+        {
+          "id": "choreography_order",
+          "kind": "order",
+          "before": "заявлен",
+          "after": "решени"
+        }
+      ],
+      "input_style": "notation_directed"
+    },
+    {
+      "id": "DB10",
+      "group": "new_domain",
+      "title": "Конференция: разговоры участников",
+      "expected_status": "ready",
+      "text": "Постройте BPMN conversation diagram взаимодействия организатора конференции, площадки и кейтеринга. Общая раскрытая тема «Конференция» — subConversation с двумя вложенными conversation: «Аренда зала» между Организатором и Площадкой, «Питание» между Организатором и Кейтерингом. Для каждой темы указаны participantRef соответствующих двух участников. Свяжите всех трёх участников с общей темой conversationLink. Отдельный callConversation «Согласовать доступ» между Организатором и Площадкой ссылается на globalConversation «Типовой доступ»; у глобального разговора свои два участника. Это схема общения, в ней не нужны process, задачи и sequence flow.",
+      "properties": [
+        {
+          "id": "subconversation",
+          "kind": "count",
+          "tag": "subConversation",
+          "min": 1
+        },
+        {
+          "id": "nested_conversation",
+          "kind": "nested",
+          "tag": "conversation",
+          "ancestor": "subConversation"
+        },
+        {
+          "id": "conversation_links",
+          "kind": "count",
+          "tag": "conversationLink",
+          "min": 3
+        },
+        {
+          "id": "call_global_conversation",
+          "kind": "reference",
+          "tag": "callConversation",
+          "attribute": "calledCollaborationRef",
+          "target_tag": "globalConversation"
+        },
+        {
+          "id": "no_sequence_flows",
+          "kind": "count",
+          "tag": "sequenceFlow",
+          "max": 0
+        }
+      ],
+      "input_style": "notation_directed"
+    },
+    {
+      "id": "DB11",
+      "group": "clarification",
+      "title": "Не указан исполнитель",
+      "expected_status": "needs_clarification",
+      "text": "После начала процесса нужно проверить заявку на доступ и затем выдать пропуск. После выдачи пропуска процесс завершается. В описании намеренно не указано, кто проверяет заявку и кто выдаёт пропуск. Не назначайте исполнителей самостоятельно: сначала уточните ответственных за оба действия.",
+      "properties": [
+        {
+          "id": "asks_role",
+          "kind": "question",
+          "pattern": "кто|исполнител|ответствен"
+        }
+      ],
+      "input_style": "incomplete_business"
+    },
+    {
+      "id": "DB12",
+      "group": "clarification",
+      "title": "Не определён отрицательный исход",
+      "expected_status": "needs_clarification",
+      "text": "Менеджер проверяет заявку на выдачу оборудования. Если лимит соблюдён, менеджер выдаёт оборудование, затем процесс завершается. Если лимит превышен, дальнейшие действия пока не определены владельцем процесса. Нельзя придумывать отказ, согласование, завершение или повтор: до построения схемы уточните именно действия при превышении лимита. Исполнитель проверки и выдачи известен — Менеджер.",
+      "properties": [
+        {
+          "id": "asks_negative_branch",
+          "kind": "question",
+          "pattern": "превыш|лимит|дальнейш|отрицательн"
+        }
+      ],
+      "input_style": "incomplete_business"
+    }
+  ]
+}

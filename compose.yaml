@@ -1,0 +1,54 @@
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    user: "10001:10001"
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=16m"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 256m
+    cpus: 1
+    pids_limit: 32
+    networks: [worker_internal]
+    restart: unless-stopped
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      APP_MODE: ${APP_MODE:-mock}
+      LLM_PROVIDER_PROFILE: ${LLM_PROVIDER_PROFILE:-openai_compatible}
+      LLM_AUTH_SCHEME: ${LLM_AUTH_SCHEME:-auto}
+      LLM_PROJECT: ${LLM_PROJECT:-}
+      LLM_API_BASE_URL: ${LLM_DOCKER_API_BASE_URL:-${LLM_API_BASE_URL:-}}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-60}
+      LLM_MAX_REPAIR_ATTEMPTS: ${LLM_MAX_REPAIR_ATTEMPTS:-2}
+      LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-8000}
+      LLM_TOKEN_PARAMETER: ${LLM_TOKEN_PARAMETER:-max_completion_tokens}
+      LLM_RESPONSE_FORMAT: ${LLM_RESPONSE_FORMAT:-json_object}
+      LLM_REASONING_EFFORT: ${LLM_REASONING_EFFORT:-auto}
+      WORKER_URL: http://worker:8081
+      DATA_DIR: /data
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+    volumes: ["process_data:/data"]
+    ports: ["127.0.0.1:8000:8000"]
+    networks: [default, worker_internal]
+    depends_on: [worker]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=16m"]
+  web:
+    build:
+      context: frontend
+    ports: ["127.0.0.1:${WEB_PORT:-8080}:80"]
+    depends_on: [api]
+networks:
+  worker_internal:
+    internal: true
+volumes:
+  process_data:

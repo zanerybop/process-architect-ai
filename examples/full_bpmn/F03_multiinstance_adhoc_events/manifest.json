@@ -1,0 +1,19 @@
+{
+  "id": "F03_multiinstance_adhoc_events",
+  "title": "Пакетная проверка, ad-hoc подготовка и событийный подпроцесс",
+  "features": [
+    "parallel multiInstance",
+    "loopCardinality",
+    "completionCondition",
+    "adHocSubProcess",
+    "event subprocess",
+    "message start"
+  ],
+  "origin": "curated_agent_authored_fixture",
+  "model_requests": 0,
+  "expected_status": "ready",
+  "expected_behavior": "inconclusive",
+  "source_sha256": "9597f4ab3a4b0a61d2f9a4638c0ca4b9c7e0d96620b81da93f993015008ccbfd",
+  "python_sha256": "054aaadf8b3abee8d1b4788c2fcb639db256db4c12083edb00c204bf97fa21dc",
+  "scope": "Deterministic standard notation support; not evidence of LLM quality."
+}

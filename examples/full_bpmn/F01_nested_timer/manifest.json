@@ -1,0 +1,18 @@
+{
+  "id": "F01_nested_timer",
+  "title": "Вложенная проверка заявления с непрерывающим таймером",
+  "features": [
+    "subProcess",
+    "nested subProcess",
+    "boundary timer",
+    "non-interrupting event",
+    "lanes"
+  ],
+  "origin": "curated_agent_authored_fixture",
+  "model_requests": 0,
+  "expected_status": "ready",
+  "expected_behavior": "inconclusive",
+  "source_sha256": "6b3f6820d94d6f64436181ce3478c5849d85407d2f712cd79a791a9898395a5f",
+  "python_sha256": "e281685426ec952558b8aa3dd69348c006c644ea09b4a776e4cdaf0cbd5432fa",
+  "scope": "Deterministic standard notation support; not evidence of LLM quality."
+}

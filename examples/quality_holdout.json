@@ -1,0 +1,167 @@
+{
+  "schema_version": "1.0",
+  "origin": "synthetic_post_freeze_holdout",
+  "created_at": "2026-10-03",
+  "author": "agent",
+  "authored_after_runtime_prompt_freeze": true,
+  "evaluation_scope": "Небольшой независимый от доработок контроль: шесть новых сюжетов, ожидания размечены до первого запроса. Автор знает контракт и типы ошибок основного регрессионного корпуса. Это не слепая экспертная оценка и не статистически репрезентативная выборка.",
+  "default_repeats": 1,
+  "freeze_policy": {
+    "runtime_prompt_version": "bpmn-python-v3-named-data",
+    "responses_seen_before_annotation": false,
+    "tuning_on_holdout_results": false,
+    "rerun_for_better_result": false,
+    "retain_all_outcomes_and_repair_attempts": true,
+    "expected_distribution": {"ready": 4, "needs_clarification": 1, "unsupported": 1},
+    "methodology": "artifacts/quality/holdout-methodology.md",
+    "freeze_manifest": "artifacts/quality/holdout-freeze.json"
+  },
+  "cases": [
+    {
+      "id": "H01",
+      "title": "Право на передачу музейного предмета",
+      "kind": "positive",
+      "expected_status": "ready",
+      "origin": "new_synthetic_post_freeze_holdout_case",
+      "text": "Процесс приёма предмета в музей. Все исполнители — сотрудники одного музея: куратор, регистратор и хранитель. Куратор получает предмет. Затем регистратор проверяет документы о праве на передачу предмета. Если право на передачу не подтверждено, куратор возвращает предмет, и процесс завершается без регистрации приёма. Только если право на передачу подтверждено, хранитель регистрирует приём предмета, после чего процесс завершается. Других проверок, оплаты и согласований нет.",
+      "expected": {
+        "roles": ["Куратор", "Регистратор", "Хранитель"],
+        "business_actions": ["Получить предмет", "Проверить документы о праве на передачу", "Вернуть предмет", "Зарегистрировать приём предмета"],
+        "patterns": ["exclusive_alternatives", "negation", "role_assignment"],
+        "critical_meaning": ["Проверка документов предшествует обоим исходам", "Неподтверждённое право ведёт только к возврату", "Подтверждённое право ведёт только к регистрации приёма", "Обе ветви завершаются"],
+        "must_not_add": ["Регистрация после возврата", "Оплата", "Новое согласование"]
+      },
+      "semantic_named_properties": [
+        {"id": "curator_receives", "kind": "action", "pattern": "получ.*предмет", "role_pattern": "куратор"},
+        {"id": "registrar_checks", "kind": "action", "pattern": "провер.*(документ|прав)", "role_pattern": "регистратор"},
+        {"id": "curator_returns", "kind": "action", "pattern": "верну.*предмет|возврат.*предмет", "role_pattern": "куратор"},
+        {"id": "keeper_registers", "kind": "action", "pattern": "регистр.*при[её]м", "role_pattern": "хранител"},
+        {"id": "checks_before_registration", "kind": "order", "before": "провер.*(документ|прав)", "after": "регистр.*при[её]м"},
+        {"id": "checks_before_return", "kind": "order", "before": "провер.*(документ|прав)", "after": "верну.*предмет|возврат.*предмет"},
+        {"id": "negative_right_returns", "kind": "condition_on_path", "target": "верну.*предмет|возврат.*предмет", "pattern": "не подтвержден|не подтвержд[её]н|(^|\\s)нет(\\s|$)"},
+        {"id": "positive_right_registers", "kind": "condition_on_path", "target": "регистр.*при[её]м", "pattern": "(?<!не )подтвержд[её]н|(^|\\s)да(\\s|$)"},
+        {"id": "xor_present", "kind": "count", "metric": "xor", "min": 1},
+        {"id": "no_parallelism", "kind": "count", "metric": "and", "min": 0, "max": 0},
+        {"id": "one_museum", "kind": "count", "metric": "pools", "min": 1, "max": 1},
+        {"id": "no_cycle", "kind": "cycle", "expected": false},
+        {"id": "no_added_approval_or_payment", "kind": "forbidden_action", "pattern": "оплат|плат[её]ж|согласован|согласов|утверд"}
+      ]
+    },
+    {
+      "id": "H02",
+      "title": "Техническая готовность театральной репетиции",
+      "kind": "positive",
+      "expected_status": "ready",
+      "origin": "new_synthetic_post_freeze_holdout_case",
+      "text": "В театре координатор регистрирует репетицию. После регистрации параллельно выполняются две независимые работы: инженер по свету проверяет освещение сцены, а звукорежиссёр проверяет аудиосистему. Обе работы обязательны. Только когда завершены обе проверки, заведующий сценой разрешает начать репетицию, и процесс завершается. Все четыре роли принадлежат одному театру. В этом процессе нет альтернативных исходов проверок, возвратов, продажи билетов или дополнительных согласований.",
+      "expected": {
+        "roles": ["Координатор", "Инженер по свету", "Звукорежиссёр", "Заведующий сценой"],
+        "business_actions": ["Зарегистрировать репетицию", "Проверить освещение сцены", "Проверить аудиосистему", "Разрешить начать репетицию"],
+        "patterns": ["parallel_split_join", "four_roles"],
+        "critical_meaning": ["После регистрации обе проверки могут выполняться независимо", "Разрешение возможно только после обеих проверок", "Нет ветки отказа, не указанной в тексте"],
+        "must_not_add": ["Продажа билетов", "Отказ", "Дополнительное согласование"]
+      },
+      "semantic_named_properties": [
+        {"id": "coordinator_registers", "kind": "action", "pattern": "регистр.*репетиц", "role_pattern": "координатор"},
+        {"id": "light_engineer_checks", "kind": "action", "pattern": "провер.*освещ", "role_pattern": "инженер.*свет"},
+        {"id": "sound_engineer_checks", "kind": "action", "pattern": "провер.*аудио", "role_pattern": "звукорежисс"},
+        {"id": "stage_manager_permits", "kind": "action", "pattern": "разреш.*репетиц", "role_pattern": "заведующ.*сцен"},
+        {"id": "register_before_light", "kind": "order", "before": "регистр.*репетиц", "after": "провер.*освещ"},
+        {"id": "register_before_audio", "kind": "order", "before": "регистр.*репетиц", "after": "провер.*аудио"},
+        {"id": "join_both_checks", "kind": "parallel_join", "branches": ["провер.*освещ", "провер.*аудио"], "after": "разреш.*репетиц"},
+        {"id": "split_and_join", "kind": "count", "metric": "and", "min": 2, "max": 2},
+        {"id": "no_xor", "kind": "count", "metric": "xor", "min": 0, "max": 0},
+        {"id": "no_cycle", "kind": "cycle", "expected": false},
+        {"id": "no_added_commerce_or_refusal", "kind": "forbidden_action", "pattern": "прода.*билет|отказ|отклон|согласов|оплат"}
+      ]
+    },
+    {
+      "id": "H03",
+      "title": "Уточнение паспорта семян ботанического сада",
+      "kind": "positive",
+      "expected_status": "ready",
+      "origin": "new_synthetic_post_freeze_holdout_case",
+      "text": "В ботаническом саду ботаник проверяет полноту паспорта семян. Если паспорт неполный, хранитель коллекции дополняет данные паспорта и возвращает его ботанику для повторной проверки полноты. Этот цикл повторяется столько раз, сколько нужно, без ограничения числа повторов. Если паспорт полный, садовник печатает этикетку для семян, и процесс завершается. Все три исполнителя работают в одном ботаническом саду. Семена не уничтожают, отказ и карантин в этом процессе не предусмотрены.",
+      "expected": {
+        "roles": ["Ботаник", "Хранитель коллекции", "Садовник"],
+        "business_actions": ["Проверить полноту паспорта семян", "Дополнить данные паспорта", "Напечатать этикетку для семян"],
+        "patterns": ["rework_cycle", "exclusive_alternatives", "explicit_exit_condition"],
+        "critical_meaning": ["После дополнения данных происходит повторная проверка", "Цикл не ограничен числом попыток", "Этикетка печатается только при полном паспорте"],
+        "must_not_add": ["Лимит попыток", "Уничтожение семян", "Отказ", "Карантин"]
+      },
+      "semantic_named_properties": [
+        {"id": "botanist_checks", "kind": "action", "pattern": "провер.*(полнот|паспорт)", "role_pattern": "ботаник"},
+        {"id": "keeper_completes", "kind": "action", "pattern": "дополн.*(данн|паспорт)", "role_pattern": "хранител"},
+        {"id": "gardener_prints", "kind": "action", "pattern": "(печат|напечат).*этикет", "role_pattern": "садовник"},
+        {"id": "recheck_cycle", "kind": "cycle", "expected": true},
+        {"id": "check_before_label", "kind": "order", "before": "провер.*(полнот|паспорт)", "after": "(печат|напечат).*этикет"},
+        {"id": "incomplete_goes_to_completion", "kind": "condition_on_path", "target": "дополн.*(данн|паспорт)", "pattern": "непол|не пол|не.*хвата|(^|\\s)нет(\\s|$)"},
+        {"id": "full_passport_allows_label", "kind": "condition_on_path", "target": "(печат|напечат).*этикет", "pattern": "(?<!не)(?<!не )полн|(^|\\s)да(\\s|$)"},
+        {"id": "xor_present", "kind": "count", "metric": "xor", "min": 1},
+        {"id": "no_parallelism", "kind": "count", "metric": "and", "min": 0, "max": 0},
+        {"id": "single_completion", "kind": "count", "metric": "ends", "min": 1, "max": 1},
+        {"id": "no_invented_terminal_action", "kind": "forbidden_action", "pattern": "уничтож|карантин|отказ|отклон|лимит|тр[её]х.*попыт|три.*попыт"}
+      ]
+    },
+    {
+      "id": "H04",
+      "title": "Передача геодезических координат с точными именами",
+      "kind": "positive",
+      "expected_status": "ready",
+      "origin": "new_synthetic_post_freeze_holdout_case",
+      "text": "В геодезическом бюро геодезист записывает координаты опорных точек. Затем картограф проверяет формат координат и сохраняет файл «Опорные_точки_участок-Б.csv». После сохранения координатор регистрирует этот файл в реестре «Геодезические материалы», и процесс завершается. Это последовательный рабочий маршрут трёх сотрудников одного бюро, без альтернативных исходов, параллельных действий, оплаты и согласований. Указанные имя файла и название реестра нужно сохранить на диаграмме точно.",
+      "expected": {
+        "roles": ["Геодезист", "Картограф", "Координатор"],
+        "business_actions": ["Записать координаты опорных точек", "Проверить формат координат", "Сохранить файл «Опорные_точки_участок-Б.csv»", "Зарегистрировать файл в реестре «Геодезические материалы»"],
+        "patterns": ["linear", "named_data_preservation", "role_assignment"],
+        "critical_meaning": ["Все четыре действия сохраняют порядок", "Проверка и сохранение принадлежат картографу", "Имя файла и название реестра видны в названиях элементов"],
+        "must_not_add": ["Отказ", "Оплата", "Дополнительное согласование"]
+      },
+      "semantic_named_properties": [
+        {"id": "surveyor_records", "kind": "action", "pattern": "запис.*координат", "role_pattern": "геодезист"},
+        {"id": "cartographer_checks", "kind": "action", "pattern": "провер.*формат.*координат", "role_pattern": "картограф"},
+        {"id": "cartographer_saves", "kind": "action", "pattern": "сохран.*Опорные_точки_участок-Б\\.csv", "role_pattern": "картограф"},
+        {"id": "coordinator_registers", "kind": "action", "pattern": "регистр.*Геодезические материалы", "role_pattern": "координатор"},
+        {"id": "record_before_check", "kind": "order", "before": "запис.*координат", "after": "провер.*формат.*координат"},
+        {"id": "check_before_save", "kind": "order", "before": "провер.*формат.*координат", "after": "сохран.*Опорные_точки_участок-Б\\.csv"},
+        {"id": "save_before_register", "kind": "order", "before": "сохран.*Опорные_точки_участок-Б\\.csv", "after": "регистр.*Геодезические материалы"},
+        {"id": "exact_filename", "kind": "literal", "text": "Опорные_точки_участок-Б.csv"},
+        {"id": "exact_registry", "kind": "literal", "text": "Геодезические материалы"},
+        {"id": "no_xor", "kind": "count", "metric": "xor", "min": 0, "max": 0},
+        {"id": "no_parallelism", "kind": "count", "metric": "and", "min": 0, "max": 0},
+        {"id": "no_cycle", "kind": "cycle", "expected": false},
+        {"id": "no_added_approval_or_payment", "kind": "forbidden_action", "pattern": "оплат|согласов|отказ|отклон|утверд"}
+      ]
+    },
+    {
+      "id": "H05",
+      "title": "Неописанный отказ в реставрации рукописи",
+      "kind": "ambiguous",
+      "expected_status": "needs_clarification",
+      "origin": "new_synthetic_post_freeze_holdout_case",
+      "text": "В архиве регистратор принимает заявку на реставрацию рукописи. Эксперт оценивает состояние рукописи и решает, допустить её к реставрации или отказать. При допуске реставратор выполняет реставрацию, а регистратор закрывает заявку. Что происходит с заявкой и рукописью при отказе, пока не определено. Нужно описать полный процесс для обоих решений; нельзя самостоятельно добавлять исход отказа.",
+      "expected": {
+        "questions_about": ["Судьба заявки и рукописи при отказе"],
+        "critical_meaning": ["Задан вопрос об отсутствующем исходе отказа вместо изобретения бизнес-действий"],
+        "must_not_add": ["Автоматическое закрытие отказа", "Утилизация рукописи", "Возврат владельцу без указания"]
+      },
+      "semantic_named_properties": [
+        {"id": "ask_refusal_outcome", "kind": "question", "pattern": "отказ|отрицательн|не.*допущ|не.*допуск"}
+      ]
+    },
+    {
+      "id": "H06",
+      "title": "Многоэкземплярная работа жюри кинофестиваля",
+      "kind": "unsupported",
+      "expected_status": "unsupported",
+      "origin": "new_synthetic_post_freeze_holdout_case",
+      "text": "Для кинофестиваля нужна BPMN-схема с параллельным многоэкземплярным подпроцессом: по одному экземпляру на каждого члена жюри из динамического списка. Внутри каждого экземпляра член жюри просматривает фильм и заполняет оценочный лист. Только после завершения всех экземпляров секретарь считает итоговую оценку. Требуется именно BPMN multi-instance subprocess с multiInstanceLoopCharacteristics и коллекцией участников. Не заменяйте его фиксированным числом веток AND, обычной задачей или текстовым комментарием.",
+      "expected": {
+        "unsupported_features": ["multi-instance subprocess", "multiInstanceLoopCharacteristics"],
+        "critical_meaning": ["Честный unsupported для подпроцесса вне поддерживаемого профиля"],
+        "must_not_add": ["Фиксированное количество членов жюри", "Подмена многоэкземплярности шлюзами или обычной задачей"]
+      },
+      "semantic_named_properties": []
+    }
+  ]
+}

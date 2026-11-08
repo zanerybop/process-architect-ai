@@ -1,0 +1,22 @@
+[project]
+name = "process-architect-ai"
+version = "0.1.0"
+description = "Текст → ограниченный Python → BPMN 2.0"
+requires-python = ">=3.11,<3.14"
+dependencies = ["fastapi", "uvicorn", "pydantic", "pydantic-settings", "httpx", "lxml"]
+
+[dependency-groups]
+dev = ["pytest", "pytest-asyncio", "ruff"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 110
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+

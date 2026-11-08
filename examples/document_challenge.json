@@ -1,0 +1,1814 @@
+{
+  "version": "document-challenge-1",
+  "created_before_live_run": "2026-10-04",
+  "purpose": "Новые сложные процессы для проверки обобщения. Корпус и XML-критерии фиксируются до запуска новой версии. Это авторский независимый набор, не внешний слепой тест и не полное доказательство смысла.",
+  "provenance": "Подготовлен отдельным агентом без запросов модели и без передачи текстов разработчикам промпта до freeze. Идентификаторы элементов модель выбирает сама; проверки используют стандартные типы, ссылки, области, роли и смысловые названия.",
+  "cases": [
+    {
+      "id": "CH01",
+      "group": "data_resources",
+      "input_style": "notation_directed",
+      "title": "Музей: оцифровка с входами и выходами",
+      "expected_status": "ready",
+      "text": "В музее реставратор сначала осматривает экспонат, затем каталогизатор составляет цифровую карточку, после чего процесс заканчивается. До начала уже существует документ «Акт поступления». Осмотр читает этот акт и создаёт документ «Заключение о сохранности». Составление карточки читает заключение и записывает результат в постоянное хранилище «Каталог музея». Покажите документы, постоянное хранилище и направленные связи данных, а не только подписи задач. Для каждой работы нужны ioSpecification, соответствующие входы/выходы и inputSet/outputSet; dataInputAssociation должна связывать существующий документ с входом работы, dataOutputAssociation — выход работы с документом или хранилищем. Исполнителей «Реставратор» и «Каталогизатор» определите как переиспользуемые ресурсы BPMN; назначение человеческого исполнителя каждой работе должно ссылаться на соответствующий resource. Дорожки можно добавить, но одни дорожки не заменяют назначение ресурсов. Не добавляйте согласование, реставрацию или публикацию: их в этом процессе нет.",
+      "properties": [
+        {
+          "id": "restorer",
+          "kind": "role",
+          "action": {
+            "tags": [
+              "userTask",
+              "manualTask",
+              "task"
+            ],
+            "pattern": "осмотр|осмотрет"
+          },
+          "role": "реставратор",
+          "role_kind": "resource"
+        },
+        {
+          "id": "cataloguer",
+          "kind": "role",
+          "action": {
+            "tags": [
+              "userTask",
+              "task",
+              "manualTask"
+            ],
+            "pattern": "карточк"
+          },
+          "role": "каталогизатор",
+          "role_kind": "resource"
+        },
+        {
+          "id": "inspection_input",
+          "kind": "io",
+          "action": {
+            "pattern": "осмотр|осмотрет",
+            "tags": [
+              "userTask",
+              "manualTask",
+              "task"
+            ]
+          },
+          "direction": "input",
+          "data": "акт.*поступлен"
+        },
+        {
+          "id": "inspection_output",
+          "kind": "io",
+          "action": {
+            "pattern": "осмотр|осмотрет",
+            "tags": [
+              "userTask",
+              "manualTask",
+              "task"
+            ]
+          },
+          "direction": "output",
+          "data": "заключен.*сохранност"
+        },
+        {
+          "id": "card_input",
+          "kind": "io",
+          "action": {
+            "pattern": "карточк",
+            "tags": [
+              "userTask",
+              "task",
+              "manualTask"
+            ]
+          },
+          "direction": "input",
+          "data": "заключен.*сохранност"
+        },
+        {
+          "id": "card_output",
+          "kind": "io",
+          "action": {
+            "pattern": "карточк",
+            "tags": [
+              "userTask",
+              "task",
+              "manualTask"
+            ]
+          },
+          "direction": "output",
+          "data": "каталог.*музе"
+        },
+        {
+          "id": "persistent_store",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "dataStore"
+            ],
+            "pattern": "каталог.*музе"
+          }
+        },
+        {
+          "id": "order",
+          "kind": "order",
+          "before": {
+            "tags": [
+              "userTask",
+              "manualTask",
+              "task"
+            ],
+            "pattern": "осмотр|осмотрет"
+          },
+          "after": {
+            "tags": [
+              "userTask",
+              "task",
+              "manualTask"
+            ],
+            "pattern": "карточк"
+          }
+        },
+        {
+          "id": "no_invented_work",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "task",
+              "userTask",
+              "serviceTask",
+              "manualTask"
+            ],
+            "pattern": "согласова|реставрир|публик"
+          },
+          "min": 0,
+          "max": 0
+        },
+        {
+          "id": "scopes",
+          "kind": "sequence_scope"
+        }
+      ]
+    },
+    {
+      "id": "CH02",
+      "group": "mixed_nesting",
+      "input_style": "business_natural",
+      "title": "Энергетика: приёмка партии шкафов",
+      "expected_status": "ready",
+      "text": "Инженер принимает партию ровно из трёх электрических шкафов. Для каждого шкафа запускается отдельная работа «Принять шкаф»; все три экземпляра выполняются одновременно. Внутри приёмки одного шкафа есть блок «Осмотр шкафа»: инженер проверяет крепления и фотографирует маркировку. У этих двух действий нет обязательного порядка, они могут выполняться одновременно; блок завершается, когда обе проверки закончены, не отменяя незавершённые действия. Затем инженер подписывает паспорт этого шкафа, и его приёмка завершается. Пока идёт приёмка конкретного шкафа, сообщение «Уточнение по шкафу» может в любой момент запустить отдельную обработку: инженер записывает замечание и завершает только обработку уточнения. Эта обработка находится внутри приёмки соответствующего шкафа, не останавливает её и может запускаться повторно при новых сообщениях. После завершения приёмки всех трёх шкафов инженер закрывает ведомость партии, и общий процесс заканчивается. Нельзя заменить три экземпляра одной проверкой партии, задать фиксированную последовательность креплений и фотографирования или вынести обработку уточнения за пределы приёмки шкафа.",
+      "properties": [
+        {
+          "id": "three_parallel_instances",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "subProcess"
+            ],
+            "pattern": "принять.*шкаф|приемк.*шкаф",
+            "children": [
+              {
+                "tags": [
+                  "multiInstanceLoopCharacteristics"
+                ],
+                "children": [
+                  {
+                    "tags": [
+                      "loopCardinality"
+                    ],
+                    "text": "^\\s*3\\s*$"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "parallel_not_sequential",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "multiInstanceLoopCharacteristics"
+            ],
+            "attrs": {
+              "isSequential": "false"
+            },
+            "in": {
+              "tags": [
+                "subProcess"
+              ],
+              "pattern": "шкаф"
+            }
+          }
+        },
+        {
+          "id": "ad_hoc_nested",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "adHocSubProcess"
+            ],
+            "attrs": {
+              "ordering": "Parallel",
+              "cancelRemainingInstances": "false"
+            },
+            "in": {
+              "tags": [
+                "subProcess"
+              ],
+              "pattern": "шкаф"
+            },
+            "children": [
+              {
+                "tags": [
+                  "completionCondition"
+                ],
+                "text": ".+"
+              },
+              {
+                "tags": [
+                  "task",
+                  "userTask",
+                  "manualTask"
+                ],
+                "pattern": "креплен"
+              },
+              {
+                "tags": [
+                  "task",
+                  "userTask",
+                  "manualTask"
+                ],
+                "pattern": "фотограф.*маркиров|сним.*маркиров"
+              }
+            ]
+          }
+        },
+        {
+          "id": "no_fixed_inspection_order",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "sequenceFlow"
+            ],
+            "parent": {
+              "tags": [
+                "adHocSubProcess"
+              ]
+            }
+          },
+          "min": 0,
+          "max": 0
+        },
+        {
+          "id": "passport_after_inspection",
+          "kind": "order",
+          "before": {
+            "tags": [
+              "adHocSubProcess"
+            ],
+            "pattern": "осмотр"
+          },
+          "after": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "подпис.*паспорт",
+            "in": {
+              "tags": [
+                "subProcess"
+              ],
+              "pattern": "шкаф"
+            }
+          }
+        },
+        {
+          "id": "nested_noninterrupting_message",
+          "kind": "event_subprocess",
+          "in": {
+            "tags": [
+              "subProcess"
+            ],
+            "pattern": "принять.*шкаф|приемк.*шкаф"
+          },
+          "interrupting": false,
+          "definition": {
+            "tags": [
+              "messageEventDefinition"
+            ]
+          },
+          "action": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "запис.*замечан|зафикс.*замечан"
+          }
+        },
+        {
+          "id": "clarification_message_reference",
+          "kind": "reference",
+          "from": {
+            "tags": [
+              "messageEventDefinition"
+            ],
+            "parent": {
+              "tags": [
+                "startEvent"
+              ],
+              "parent": {
+                "tags": [
+                  "subProcess"
+                ],
+                "attrs": {
+                  "triggeredByEvent": "true"
+                }
+              }
+            }
+          },
+          "attribute": "messageRef",
+          "to": {
+            "tags": [
+              "message"
+            ],
+            "pattern": "уточнен.*шкаф"
+          }
+        },
+        {
+          "id": "engineer_inherited_role",
+          "kind": "role",
+          "action": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "креплен"
+          },
+          "role": "инженер"
+        },
+        {
+          "id": "all_instances_before_close",
+          "kind": "order",
+          "before": {
+            "tags": [
+              "subProcess"
+            ],
+            "pattern": "принять.*шкаф|приемк.*шкаф"
+          },
+          "after": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "закры.*ведомост"
+          }
+        },
+        {
+          "id": "scopes",
+          "kind": "sequence_scope"
+        }
+      ]
+    },
+    {
+      "id": "CH03",
+      "group": "timer_error_escalation",
+      "input_style": "business_natural",
+      "title": "Издательство: подготовка выпуска с тремя реакциями",
+      "expected_status": "ready",
+      "text": "Редактор запускает отдельную процедуру «Подготовить выпуск». Внутри неё верстальщик проверяет исходники. Если исходники невозможно открыть, процедура выдаёт ошибку «Повреждены исходники» и немедленно прекращается; снаружи администратор восстанавливает пакет, после чего весь процесс заканчивается без выпуска. Если исходники доступны, верстальщик собирает макет. После сборки, если требуется внимание редактора, из процедуры посылается уведомление о повышении уровня проблемы «Нужна консультация», при этом подготовка продолжается; редактор снаружи проводит консультацию и завершает только эту реакцию. Если консультация не нужна, уведомление не посылается. Затем верстальщик завершает подготовку. Через два часа от начала процедуры, если она ещё идёт, редактор получает напоминание: он связывается с верстальщиком, а процедура продолжает работать. Таймер срабатывает один раз и не означает отмену. После нормального окончания подготовки редактор передаёт выпуск в печать и завершает процесс. Ошибка, повышение уровня проблемы и двухчасовое ожидание должны быть связаны именно с процедурой подготовки; нельзя заменить их обычными задачами в её успешной цепочке.",
+      "properties": [
+        {
+          "id": "preparation_scope",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "subProcess"
+            ],
+            "pattern": "подготов.*выпуск",
+            "children": [
+              {
+                "tags": [
+                  "task",
+                  "userTask",
+                  "serviceTask",
+                  "manualTask"
+                ],
+                "pattern": "собра.*макет|сборк.*макет"
+              }
+            ]
+          }
+        },
+        {
+          "id": "noninterrupting_timer",
+          "kind": "boundary",
+          "host": {
+            "tags": [
+              "subProcess"
+            ],
+            "pattern": "подготов.*выпуск"
+          },
+          "definition": {
+            "tags": [
+              "timerEventDefinition"
+            ],
+            "children": [
+              {
+                "tags": [
+                  "timeDuration"
+                ],
+                "text": "^\\s*(PT2H|PT120M|PT7200S|P0DT2H)\\s*$"
+              }
+            ]
+          },
+          "interrupting": false,
+          "handler": {
+            "tags": [
+              "task",
+              "userTask",
+              "sendTask",
+              "manualTask"
+            ],
+            "pattern": "связ.*верстальщ|напом.*верстальщ"
+          }
+        },
+        {
+          "id": "interrupting_error_same_ref",
+          "kind": "boundary",
+          "host": {
+            "tags": [
+              "subProcess"
+            ],
+            "pattern": "подготов.*выпуск"
+          },
+          "definition": {
+            "tags": [
+              "errorEventDefinition"
+            ]
+          },
+          "interrupting": true,
+          "handler": {
+            "tags": [
+              "task",
+              "userTask",
+              "serviceTask",
+              "manualTask"
+            ],
+            "pattern": "восстанов.*пакет"
+          },
+          "raised_inside": {
+            "select": {
+              "tags": [
+                "errorEventDefinition"
+              ],
+              "parent": {
+                "tags": [
+                  "endEvent"
+                ]
+              }
+            },
+            "reference": "errorRef"
+          }
+        },
+        {
+          "id": "noninterrupting_escalation_same_ref",
+          "kind": "boundary",
+          "host": {
+            "tags": [
+              "subProcess"
+            ],
+            "pattern": "подготов.*выпуск"
+          },
+          "definition": {
+            "tags": [
+              "escalationEventDefinition"
+            ]
+          },
+          "interrupting": false,
+          "handler": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "консультац"
+          },
+          "raised_inside": {
+            "select": {
+              "tags": [
+                "escalationEventDefinition"
+              ],
+              "parent": {
+                "tags": [
+                  "intermediateThrowEvent"
+                ]
+              }
+            },
+            "reference": "escalationRef"
+          }
+        },
+        {
+          "id": "admin_role",
+          "kind": "role",
+          "action": {
+            "tags": [
+              "task",
+              "userTask",
+              "serviceTask",
+              "manualTask"
+            ],
+            "pattern": "восстанов.*пакет"
+          },
+          "role": "администратор"
+        },
+        {
+          "id": "editor_role",
+          "kind": "role",
+          "action": {
+            "tags": [
+              "task",
+              "userTask",
+              "sendTask",
+              "manualTask"
+            ],
+            "pattern": "переда.*печать|отправ.*печать"
+          },
+          "role": "редактор"
+        },
+        {
+          "id": "normal_print_after_preparation",
+          "kind": "order",
+          "before": {
+            "tags": [
+              "subProcess"
+            ],
+            "pattern": "подготов.*выпуск"
+          },
+          "after": {
+            "tags": [
+              "task",
+              "userTask",
+              "sendTask",
+              "manualTask"
+            ],
+            "pattern": "переда.*печать|отправ.*печать"
+          }
+        },
+        {
+          "id": "error_only_on_bad_sources",
+          "kind": "branch",
+          "gateway": {
+            "tags": [
+              "exclusiveGateway"
+            ],
+            "in": {
+              "tags": [
+                "subProcess"
+              ],
+              "pattern": "подготов.*выпуск"
+            }
+          },
+          "condition": "невозможно|недоступ|поврежд|не.*откры",
+          "to": {
+            "tags": [
+              "endEvent"
+            ],
+            "children": [
+              {
+                "tags": [
+                  "errorEventDefinition"
+                ]
+              }
+            ]
+          },
+          "not_to": {
+            "tags": [
+              "task",
+              "userTask",
+              "serviceTask",
+              "manualTask"
+            ],
+            "pattern": "собра.*макет|сборк.*макет"
+          }
+        },
+        {
+          "id": "scopes",
+          "kind": "sequence_scope"
+        }
+      ]
+    },
+    {
+      "id": "CH04",
+      "group": "compensation",
+      "input_style": "business_natural",
+      "title": "Театр: отмена выполненных бронирования и оплаты",
+      "expected_status": "ready",
+      "text": "Кассир оформляет групповое посещение театра. Сначала система резервирует ложу, затем списывает оплату. Считайте обе операции успешными: технические отказы здесь не рассматриваются. После оплаты кассир получает окончательное решение заказчика. Если заказчик подтверждает посещение, кассир выдаёт билеты и процесс завершается. Если заказчик отменяет посещение, нужно отменить уже выполненные операции в обратном порядке: вернуть списанную оплату и освободить зарезервированную ложу, затем кассир закрывает отменённый заказ и процесс заканчивается. Возврат оплаты является компенсацией именно успешного списания, освобождение ложи — компенсацией именно успешного резервирования. Эти обработчики не входят в обычную последовательность работ и не должны исполняться при подтверждении посещения. На схеме необходимо сохранить связи каждой успешной операции со своим обработчиком и показать запуск компенсации на ветке отмены. Не добавляйте штрафы, согласование возврата или частичную отмену.",
+      "properties": [
+        {
+          "id": "seat_compensation",
+          "kind": "compensation",
+          "host": {
+            "tags": [
+              "task",
+              "serviceTask"
+            ],
+            "pattern": "резерв.*лож|заброни.*лож"
+          },
+          "handler": {
+            "tags": [
+              "task",
+              "serviceTask"
+            ],
+            "pattern": "освобод.*лож|снять.*резерв.*лож"
+          }
+        },
+        {
+          "id": "payment_compensation",
+          "kind": "compensation",
+          "host": {
+            "tags": [
+              "task",
+              "serviceTask"
+            ],
+            "pattern": "списа.*оплат|списа.*средств"
+          },
+          "handler": {
+            "tags": [
+              "task",
+              "serviceTask"
+            ],
+            "pattern": "верн.*оплат|возврат.*оплат|верн.*средств"
+          }
+        },
+        {
+          "id": "compensation_is_triggered",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "compensateEventDefinition"
+            ],
+            "parent": {
+              "tags": [
+                "intermediateThrowEvent",
+                "endEvent"
+              ]
+            }
+          }
+        },
+        {
+          "id": "reserve_before_charge",
+          "kind": "order",
+          "before": {
+            "tags": [
+              "task",
+              "serviceTask"
+            ],
+            "pattern": "резерв.*лож|заброни.*лож"
+          },
+          "after": {
+            "tags": [
+              "task",
+              "serviceTask"
+            ],
+            "pattern": "списа.*оплат|списа.*средств"
+          }
+        },
+        {
+          "id": "compensation_on_cancel_branch",
+          "kind": "branch",
+          "condition": "отмен|отказ",
+          "to": {
+            "tags": [
+              "intermediateThrowEvent"
+            ],
+            "children": [
+              {
+                "tags": [
+                  "compensateEventDefinition"
+                ]
+              }
+            ]
+          },
+          "not_to": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "выда.*билет"
+          }
+        },
+        {
+          "id": "compensate_before_close",
+          "kind": "order",
+          "before": {
+            "tags": [
+              "intermediateThrowEvent"
+            ],
+            "children": [
+              {
+                "tags": [
+                  "compensateEventDefinition"
+                ]
+              }
+            ]
+          },
+          "after": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "закры.*отмен|закры.*заказ"
+          }
+        },
+        {
+          "id": "confirm_branch",
+          "kind": "branch",
+          "condition": "подтверж|соглас",
+          "to": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "выда.*билет"
+          },
+          "not_to": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "закры.*отмен|закры.*заказ"
+          }
+        },
+        {
+          "id": "cancel_branch",
+          "kind": "branch",
+          "condition": "отмен|отказ",
+          "to": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "закры.*отмен|закры.*заказ"
+          },
+          "not_to": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "выда.*билет"
+          }
+        },
+        {
+          "id": "cashier",
+          "kind": "role",
+          "action": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "выда.*билет"
+          },
+          "role": "кассир"
+        },
+        {
+          "id": "no_fines",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "task",
+              "userTask",
+              "serviceTask",
+              "manualTask"
+            ],
+            "pattern": "штраф|согласова.*возврат|частичн.*отмен"
+          },
+          "min": 0,
+          "max": 0
+        },
+        {
+          "id": "scopes",
+          "kind": "sequence_scope"
+        }
+      ]
+    },
+    {
+      "id": "CH05",
+      "group": "conversation_reuse",
+      "input_style": "notation_directed",
+      "title": "Фестиваль еды: разговоры и глобальный шаблон",
+      "expected_status": "ready",
+      "text": "Постройте именно BPMN conversation model для фестиваля еды, без обычного process и без choreography. В collaboration «Подготовка фестиваля» участвуют закрытые пулы «Организатор», «Ресторатор» и «Инспектор». Вложенный subConversation «Допуск кухни» содержит два conversation: «Меню» с участниками Организатор и Ресторатор, «Санитарные документы» с участниками Ресторатор и Инспектор. ParticipantRef каждого разговора должен ссылаться на соответствующих участников; снаружи conversation links связывают все три пула с subConversation «Допуск кухни». В отдельном globalConversation «Типовое согласование времени» есть два участника-шаблона «Инициатор времени» и «Получатель времени», а между ними разговор «Время монтажа». В основной collaboration добавьте callConversation «Согласовать монтаж», ссылающийся на этот globalConversation. Его участники — Организатор и Ресторатор. Через participantAssociation явно сопоставьте Инициатора времени с Организатором, а Получателя времени с Ресторатором. Не заменяйте вызов копией глобального разговора; ссылки должны разрешаться внутри одного BPMN-файла.",
+      "properties": [
+        {
+          "id": "conversation_not_process",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "process",
+              "choreography"
+            ]
+          },
+          "min": 0,
+          "max": 0
+        },
+        {
+          "id": "nested_menu",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "conversation"
+            ],
+            "pattern": "меню",
+            "parent": {
+              "tags": [
+                "subConversation"
+              ],
+              "pattern": "допуск.*кухн"
+            }
+          }
+        },
+        {
+          "id": "nested_documents",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "conversation"
+            ],
+            "pattern": "санитарн.*документ",
+            "parent": {
+              "tags": [
+                "subConversation"
+              ],
+              "pattern": "допуск.*кухн"
+            }
+          }
+        },
+        {
+          "id": "menu_organizer",
+          "kind": "reference",
+          "from": {
+            "tags": [
+              "conversation"
+            ],
+            "pattern": "меню"
+          },
+          "child": "participantRef",
+          "to": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "^организатор$"
+          }
+        },
+        {
+          "id": "menu_restaurateur",
+          "kind": "reference",
+          "from": {
+            "tags": [
+              "conversation"
+            ],
+            "pattern": "меню"
+          },
+          "child": "participantRef",
+          "to": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "^ресторатор$"
+          }
+        },
+        {
+          "id": "documents_inspector",
+          "kind": "reference",
+          "from": {
+            "tags": [
+              "conversation"
+            ],
+            "pattern": "санитарн.*документ"
+          },
+          "child": "participantRef",
+          "to": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "^инспектор$"
+          }
+        },
+        {
+          "id": "documents_restaurateur",
+          "kind": "reference",
+          "from": {
+            "tags": [
+              "conversation"
+            ],
+            "pattern": "санитарн.*документ"
+          },
+          "child": "participantRef",
+          "to": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "^ресторатор$"
+          }
+        },
+        {
+          "id": "local_global_call",
+          "kind": "reference",
+          "from": {
+            "tags": [
+              "callConversation"
+            ],
+            "pattern": "монтаж"
+          },
+          "attribute": "calledCollaborationRef",
+          "to": {
+            "tags": [
+              "globalConversation"
+            ],
+            "pattern": "типов.*согласован.*времен"
+          }
+        },
+        {
+          "id": "initiator_mapping",
+          "kind": "mapping",
+          "owner": {
+            "tags": [
+              "callConversation"
+            ],
+            "pattern": "монтаж"
+          },
+          "tag": "participantAssociation",
+          "first_child": "innerParticipantRef",
+          "second_child": "outerParticipantRef",
+          "first": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "инициатор.*времен",
+            "parent": {
+              "tags": [
+                "globalConversation"
+              ]
+            }
+          },
+          "second": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "^организатор$",
+            "parent": {
+              "tags": [
+                "collaboration"
+              ]
+            }
+          }
+        },
+        {
+          "id": "receiver_mapping",
+          "kind": "mapping",
+          "owner": {
+            "tags": [
+              "callConversation"
+            ],
+            "pattern": "монтаж"
+          },
+          "tag": "participantAssociation",
+          "first_child": "innerParticipantRef",
+          "second_child": "outerParticipantRef",
+          "first": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "получатель.*времен",
+            "parent": {
+              "tags": [
+                "globalConversation"
+              ]
+            }
+          },
+          "second": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "^ресторатор$",
+            "parent": {
+              "tags": [
+                "collaboration"
+              ]
+            }
+          }
+        },
+        {
+          "id": "conversation_links",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "conversationLink"
+            ],
+            "parent": {
+              "tags": [
+                "collaboration"
+              ]
+            }
+          },
+          "min": 3
+        },
+        {
+          "id": "organizer_conversation_link",
+          "kind": "link",
+          "edge": {
+            "tags": [
+              "conversationLink"
+            ]
+          },
+          "from": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "^организатор$"
+          },
+          "to": {
+            "tags": [
+              "subConversation"
+            ],
+            "pattern": "допуск.*кухн"
+          },
+          "undirected": true
+        },
+        {
+          "id": "restaurateur_conversation_link",
+          "kind": "link",
+          "edge": {
+            "tags": [
+              "conversationLink"
+            ]
+          },
+          "from": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "^ресторатор$"
+          },
+          "to": {
+            "tags": [
+              "subConversation"
+            ],
+            "pattern": "допуск.*кухн"
+          },
+          "undirected": true
+        },
+        {
+          "id": "inspector_conversation_link",
+          "kind": "link",
+          "edge": {
+            "tags": [
+              "conversationLink"
+            ]
+          },
+          "from": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "^инспектор$"
+          },
+          "to": {
+            "tags": [
+              "subConversation"
+            ],
+            "pattern": "допуск.*кухн"
+          },
+          "undirected": true
+        },
+        {
+          "id": "three_black_boxes",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "participant"
+            ],
+            "attrs": {
+              "processRef": null
+            },
+            "parent": {
+              "tags": [
+                "collaboration"
+              ]
+            }
+          },
+          "min": 3,
+          "max": 3
+        }
+      ]
+    },
+    {
+      "id": "CH06",
+      "group": "choreography_loop",
+      "input_style": "notation_directed",
+      "title": "Аккредитация: повторяемый обмен уточнениями",
+      "expected_status": "ready",
+      "text": "Нужна BPMN choreography «Аккредитация выставки», а не обычный process. Участники: «Экспонент» и «Комиссия». После startEvent Экспонент инициирует choreographyTask «Передать досье»: сообщение «Досье экспонента» идёт от Экспонента к Комиссии. Далее Комиссия инициирует choreographyTask «Запросить уточнение», отправляя Экспоненту сообщение «Запрос уточнения». Затем Экспонент инициирует choreographyTask «Передать материалы», отправляя Комиссии сообщение «Дополнительные материалы». Этот последний обмен имеет стандартный повтор: loopType Standard на самой choreographyTask, не multi-instance и не цикл обычных tasks. После завершения повторяемого обмена Комиссия инициирует choreographyTask «Выдать аккредитацию», сообщение «Решение об аккредитации» идёт Экспоненту, затем endEvent. У каждой choreographyTask нужны оба participantRef, правильный initiatingParticipantRef и messageFlowRef на настоящий messageFlow с messageRef. В файле не должно быть подмены хореографии пулом с дорожками или обычными задачами.",
+      "properties": [
+        {
+          "id": "no_process",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "process",
+              "task",
+              "userTask",
+              "serviceTask",
+              "manualTask"
+            ]
+          },
+          "min": 0,
+          "max": 0
+        },
+        {
+          "id": "dossier_exchange",
+          "kind": "choreography",
+          "task": {
+            "tags": [
+              "choreographyTask"
+            ],
+            "pattern": "досье"
+          },
+          "initiator": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "экспонент"
+          },
+          "receiver": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "комиссия"
+          },
+          "message": {
+            "tags": [
+              "message"
+            ],
+            "pattern": "досье.*экспонент"
+          }
+        },
+        {
+          "id": "request_exchange",
+          "kind": "choreography",
+          "task": {
+            "tags": [
+              "choreographyTask"
+            ],
+            "pattern": "запрос.*уточнен"
+          },
+          "initiator": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "комиссия"
+          },
+          "receiver": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "экспонент"
+          },
+          "message": {
+            "tags": [
+              "message"
+            ],
+            "pattern": "запрос.*уточнен"
+          }
+        },
+        {
+          "id": "materials_standard_loop",
+          "kind": "choreography",
+          "task": {
+            "tags": [
+              "choreographyTask"
+            ],
+            "pattern": "материал",
+            "attrs": {
+              "loopType": "Standard"
+            }
+          },
+          "initiator": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "экспонент"
+          },
+          "receiver": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "комиссия"
+          },
+          "message": {
+            "tags": [
+              "message"
+            ],
+            "pattern": "дополнительн.*материал"
+          }
+        },
+        {
+          "id": "decision_exchange",
+          "kind": "choreography",
+          "task": {
+            "tags": [
+              "choreographyTask"
+            ],
+            "pattern": "аккредитац"
+          },
+          "initiator": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "комиссия"
+          },
+          "receiver": {
+            "tags": [
+              "participant"
+            ],
+            "pattern": "экспонент"
+          },
+          "message": {
+            "tags": [
+              "message"
+            ],
+            "pattern": "решен.*аккредитац"
+          }
+        },
+        {
+          "id": "request_before_materials",
+          "kind": "order",
+          "before": {
+            "tags": [
+              "choreographyTask"
+            ],
+            "pattern": "запрос.*уточнен"
+          },
+          "after": {
+            "tags": [
+              "choreographyTask"
+            ],
+            "pattern": "материал"
+          }
+        },
+        {
+          "id": "materials_before_decision",
+          "kind": "order",
+          "before": {
+            "tags": [
+              "choreographyTask"
+            ],
+            "pattern": "материал"
+          },
+          "after": {
+            "tags": [
+              "choreographyTask"
+            ],
+            "pattern": "аккредитац"
+          }
+        },
+        {
+          "id": "scopes",
+          "kind": "sequence_scope"
+        }
+      ]
+    },
+    {
+      "id": "CH07",
+      "group": "multiple_pools_roles",
+      "input_style": "business_natural",
+      "title": "Автобусное депо: местный ремонт или эвакуация",
+      "expected_status": "ready",
+      "text": "В автобусном депо диспетчер регистрирует неисправность, затем механик оценивает, может ли автобус двигаться своим ходом. Если может, механик перегоняет автобус в ремонтную зону и завершает этот случай. Если не может, диспетчер отправляет независимой компании «Эвакуатор» сообщение «Запрос эвакуации» и ожидает «Подтверждение вывоза». В компании Эвакуатор оператор получает запрос, водитель вывозит автобус, оператор отправляет депо подтверждение, после чего работа компании заканчивается. Получив подтверждение, диспетчер закрывает заявку и процесс депо завершается. На схеме покажите две самостоятельные организации с раздельными процессами: «Депо» и «Эвакуатор»; диспетчера и механика внутри Депо, оператора и водителя внутри Эвакуатора. Между организациями идут только сообщения. На ветке собственного хода нет вызова эвакуатора, ожидания подтверждения или оплаты. Не добавляйте ремонт: описанный процесс заканчивается доставкой автобуса.",
+      "properties": [
+        {
+          "id": "two_processes",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "process"
+            ]
+          },
+          "min": 2,
+          "max": 2
+        },
+        {
+          "id": "dispatcher",
+          "kind": "role",
+          "action": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "регистр.*неисправ|зафикс.*неисправ"
+          },
+          "role": "диспетчер",
+          "role_kind": "lane"
+        },
+        {
+          "id": "mechanic",
+          "kind": "role",
+          "action": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "перегна|перегон|перемест.*ремонт|достав.*ремонт"
+          },
+          "role": "механик",
+          "role_kind": "lane"
+        },
+        {
+          "id": "driver",
+          "kind": "role",
+          "action": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "вывез|вывоз|эвакуир"
+          },
+          "role": "водитель",
+          "role_kind": "lane"
+        },
+        {
+          "id": "drivable_branch",
+          "kind": "branch",
+          "condition": "^(?!.*не\\s+может)(?!.*неисправ).*(может.*двиг|своим.*ход|исправен.*ход)",
+          "to": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "перегна|перегон|перемест.*ремонт|достав.*ремонт"
+          },
+          "not_to": {
+            "tags": [
+              "sendTask",
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "отправ.*запрос|запрос.*эвакуац"
+          }
+        },
+        {
+          "id": "tow_message",
+          "kind": "link",
+          "edge": {
+            "tags": [
+              "messageFlow"
+            ]
+          },
+          "from": {
+            "tags": [
+              "sendTask",
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "запрос.*эвакуац|отправ.*запрос"
+          },
+          "to": {
+            "tags": [
+              "receiveTask",
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "получ.*запрос|приня.*запрос"
+          }
+        },
+        {
+          "id": "confirmation_message",
+          "kind": "link",
+          "edge": {
+            "tags": [
+              "messageFlow"
+            ]
+          },
+          "from": {
+            "tags": [
+              "sendTask",
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "отправ.*подтверж|переда.*подтверж"
+          },
+          "to": {
+            "tags": [
+              "receiveTask",
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "ожида.*подтверж|получ.*подтверж"
+          }
+        },
+        {
+          "id": "no_unrequested_repair_or_payment",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "task",
+              "userTask",
+              "serviceTask",
+              "manualTask"
+            ],
+            "pattern": "выполн.*ремонт|отремонт|оплат|списа.*деньг"
+          },
+          "min": 0,
+          "max": 0
+        },
+        {
+          "id": "scopes",
+          "kind": "sequence_scope"
+        }
+      ]
+    },
+    {
+      "id": "CH08",
+      "group": "reusable_call",
+      "input_style": "business_natural",
+      "title": "Спортивный центр: повторное использование проверки допуска",
+      "expected_status": "ready",
+      "text": "В спортивном центре инструктор регистрирует участника программы. Затем вызывается типовая процедура «Проверить допуск» для первого зала. В этой процедуре инструктор проверяет документ и отмечает допуск, после чего возвращается в вызывающий процесс. После первого вызова инструктор проводит вводный инструктаж. Затем вызывается та же процедура «Проверить допуск» для второго зала. После второго возвращения инструктор фиксирует готовность участника, и программа завершается. Представьте типовую процедуру один раз как отдельный переиспользуемый процесс в том же файле, с собственными началом и концом, а в программе — два вызова, названных «Допуск в первый зал» и «Допуск во второй зал». Оба вызова ссылаются на одну и ту же процедуру, а не на две её копии. Результаты всех проверок положительные; отказов и ветвления здесь нет. Ответственность инструктора должна быть видна и в основной программе, и внутри типовой процедуры.",
+      "properties": [
+        {
+          "id": "same_reused_process",
+          "kind": "reference",
+          "from": {
+            "tags": [
+              "callActivity"
+            ],
+            "pattern": "допуск.*зал"
+          },
+          "attribute": "calledElement",
+          "to": {
+            "tags": [
+              "process"
+            ],
+            "pattern": "провер.*допуск"
+          },
+          "min": 2,
+          "same_target": true
+        },
+        {
+          "id": "one_definition",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "process"
+            ],
+            "pattern": "провер.*допуск"
+          },
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "callee_check",
+          "kind": "role",
+          "action": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "провер.*документ",
+            "parent": {
+              "tags": [
+                "process"
+              ],
+              "pattern": "провер.*допуск"
+            }
+          },
+          "role": "инструктор"
+        },
+        {
+          "id": "callee_mark",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "отмет.*допуск|зафикс.*допуск",
+            "parent": {
+              "tags": [
+                "process"
+              ],
+              "pattern": "провер.*допуск"
+            }
+          }
+        },
+        {
+          "id": "first_before_briefing",
+          "kind": "order",
+          "before": {
+            "tags": [
+              "callActivity"
+            ],
+            "pattern": "перв.*зал"
+          },
+          "after": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "инструктаж"
+          }
+        },
+        {
+          "id": "briefing_before_second",
+          "kind": "order",
+          "before": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "инструктаж"
+          },
+          "after": {
+            "tags": [
+              "callActivity"
+            ],
+            "pattern": "втор.*зал"
+          }
+        },
+        {
+          "id": "second_before_ready",
+          "kind": "order",
+          "before": {
+            "tags": [
+              "callActivity"
+            ],
+            "pattern": "втор.*зал"
+          },
+          "after": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "готовност"
+          }
+        },
+        {
+          "id": "no_invented_decision",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "exclusiveGateway",
+              "inclusiveGateway"
+            ]
+          },
+          "min": 0,
+          "max": 0
+        },
+        {
+          "id": "scopes",
+          "kind": "sequence_scope"
+        }
+      ]
+    },
+    {
+      "id": "CH09",
+      "group": "event_race",
+      "input_style": "business_natural",
+      "title": "Теплица: сообщение датчика или истечение ожидания",
+      "expected_status": "ready",
+      "text": "В теплице автоматика запускает промывку линии и затем одновременно ждёт одно из двух событий: сообщение датчика «Вода прозрачная» или истечение 30 минут. Побеждает первое наступившее событие; второе ожидание сразу отменяется. Если первым пришло сообщение датчика, автоматика записывает успешную промывку в журнал, и процесс заканчивается. Если первыми истекли 30 минут, техник осматривает фильтр, после чего процесс заканчивается без записи об успешной промывке. Это ожидание внешних событий, а не проверка заранее известного булевого признака и не выполнение обеих веток параллельно. Покажите отдельные роли Автоматика и Техник. Не придумывайте ремонт фильтра, повторный запуск или подтверждение техника.",
+      "properties": [
+        {
+          "id": "event_race_gateway",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "eventBasedGateway"
+            ]
+          }
+        },
+        {
+          "id": "message_wait_link",
+          "kind": "link",
+          "edge": {
+            "tags": [
+              "sequenceFlow"
+            ]
+          },
+          "from": {
+            "tags": [
+              "eventBasedGateway"
+            ]
+          },
+          "to": {
+            "tags": [
+              "intermediateCatchEvent"
+            ],
+            "children": [
+              {
+                "tags": [
+                  "messageEventDefinition"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "timer_wait_link",
+          "kind": "link",
+          "edge": {
+            "tags": [
+              "sequenceFlow"
+            ]
+          },
+          "from": {
+            "tags": [
+              "eventBasedGateway"
+            ]
+          },
+          "to": {
+            "tags": [
+              "intermediateCatchEvent"
+            ],
+            "children": [
+              {
+                "tags": [
+                  "timerEventDefinition"
+                ],
+                "children": [
+                  {
+                    "tags": [
+                      "timeDuration"
+                    ],
+                    "text": "^\\s*(PT30M|PT1800S|PT0H30M)\\s*$"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "message_definition",
+          "kind": "reference",
+          "from": {
+            "tags": [
+              "messageEventDefinition"
+            ],
+            "parent": {
+              "tags": [
+                "intermediateCatchEvent"
+              ]
+            }
+          },
+          "attribute": "messageRef",
+          "to": {
+            "tags": [
+              "message"
+            ],
+            "pattern": "вода.*прозрачн"
+          }
+        },
+        {
+          "id": "success_role",
+          "kind": "role",
+          "action": {
+            "tags": [
+              "task",
+              "serviceTask"
+            ],
+            "pattern": "запис.*промыв|журнал"
+          },
+          "role": "автоматик"
+        },
+        {
+          "id": "timeout_role",
+          "kind": "role",
+          "action": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "осмотр.*фильтр|провер.*фильтр"
+          },
+          "role": "техник"
+        },
+        {
+          "id": "message_success_only",
+          "kind": "path",
+          "from": {
+            "tags": [
+              "intermediateCatchEvent"
+            ],
+            "children": [
+              {
+                "tags": [
+                  "messageEventDefinition"
+                ]
+              }
+            ]
+          },
+          "to": {
+            "tags": [
+              "task",
+              "serviceTask"
+            ],
+            "pattern": "запис.*промыв|журнал"
+          },
+          "not_to": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "осмотр.*фильтр|провер.*фильтр"
+          }
+        },
+        {
+          "id": "timer_inspection_only",
+          "kind": "path",
+          "from": {
+            "tags": [
+              "intermediateCatchEvent"
+            ],
+            "children": [
+              {
+                "tags": [
+                  "timerEventDefinition"
+                ]
+              }
+            ]
+          },
+          "to": {
+            "tags": [
+              "task",
+              "userTask",
+              "manualTask"
+            ],
+            "pattern": "осмотр.*фильтр|провер.*фильтр"
+          },
+          "not_to": {
+            "tags": [
+              "task",
+              "serviceTask"
+            ],
+            "pattern": "запис.*промыв|журнал"
+          }
+        },
+        {
+          "id": "no_boolean_or_parallel_substitute",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "exclusiveGateway",
+              "parallelGateway",
+              "inclusiveGateway"
+            ]
+          },
+          "min": 0,
+          "max": 0
+        },
+        {
+          "id": "no_invented_repair",
+          "kind": "count",
+          "select": {
+            "tags": [
+              "task",
+              "userTask",
+              "serviceTask",
+              "manualTask"
+            ],
+            "pattern": "ремонт|повторн.*запуск|подтвержден.*техник"
+          },
+          "min": 0,
+          "max": 0
+        },
+        {
+          "id": "scopes",
+          "kind": "sequence_scope"
+        }
+      ]
+    }
+  ]
+}

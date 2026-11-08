@@ -1,0 +1,11 @@
+# Ручная синтетическая fixture: не результат LLM.
+bpmn.process(id="p11", name="Регистрация показания счётчика")
+bpmn.pool(id="p11_pool", name="Регистрация показания", process_id="p11")
+bpmn.lane(id="p11_operator", process_id="p11", name="Оператор")
+bpmn.start(id="p11_start", process_id="p11", lane_id="p11_operator", name="Начало")
+bpmn.task(id="p11_receive", process_id="p11", lane_id="p11_operator", name="Получить показание счётчика", source_quote="Оператор получает показание счётчика")
+bpmn.task(id="p11_register", process_id="p11", lane_id="p11_operator", name="Занести показание в журнал", source_quote="заносит показание в журнал")
+bpmn.end(id="p11_end", process_id="p11", lane_id="p11_operator", name="Регистрация завершена")
+bpmn.flow(id="p11_f1", source="p11_start", target="p11_receive")
+bpmn.flow(id="p11_f2", source="p11_receive", target="p11_register")
+bpmn.flow(id="p11_f3", source="p11_register", target="p11_end")

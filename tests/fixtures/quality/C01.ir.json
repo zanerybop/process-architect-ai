@@ -1,0 +1,1227 @@
+{
+  "schema_version": "1.0",
+  "processes": [
+    {
+      "id": "proc_buyer",
+      "name": "Процесс покупателя"
+    },
+    {
+      "id": "proc_supplier",
+      "name": "Процесс поставщика"
+    }
+  ],
+  "participants": [
+    {
+      "id": "pool_buyer",
+      "name": "Покупатель Вектор",
+      "process_id": "proc_buyer"
+    },
+    {
+      "id": "pool_supplier",
+      "name": "Поставщик Орион",
+      "process_id": "proc_supplier"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "lane_initiator",
+      "name": "Инициатор",
+      "process_id": "proc_buyer"
+    },
+    {
+      "id": "lane_specialist",
+      "name": "Специалист снабжения",
+      "process_id": "proc_buyer"
+    },
+    {
+      "id": "lane_accountant",
+      "name": "Бухгалтер",
+      "process_id": "proc_buyer"
+    },
+    {
+      "id": "lane_manager",
+      "name": "Менеджер",
+      "process_id": "proc_supplier"
+    },
+    {
+      "id": "lane_warehouse",
+      "name": "Кладовщик",
+      "process_id": "proc_supplier"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "start_buyer",
+      "type": "startEvent",
+      "name": "Начало процесса покупателя",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_initiator"
+    },
+    {
+      "id": "task_create_request",
+      "type": "task",
+      "name": "Создать заявку",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_initiator"
+    },
+    {
+      "id": "task_check_completeness",
+      "type": "task",
+      "name": "Проверить комплектность",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "gw_completeness",
+      "type": "exclusiveGateway",
+      "name": "Заявка полная?",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "task_supplement",
+      "type": "task",
+      "name": "Дополнить заявку",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_initiator"
+    },
+    {
+      "id": "gw_parallel_checks",
+      "type": "parallelGateway",
+      "name": "Одновременные проверки",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "task_check_budget",
+      "type": "task",
+      "name": "Проверить бюджет",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_accountant"
+    },
+    {
+      "id": "task_check_supplier",
+      "type": "task",
+      "name": "Проверить поставщика",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "gw_join_checks",
+      "type": "parallelGateway",
+      "name": "Объединение результатов проверок",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "gw_decision",
+      "type": "exclusiveGateway",
+      "name": "Решение по заявке?",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "end_reject_budget",
+      "type": "endEvent",
+      "name": "Отказ по бюджету",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "end_reject_supplier",
+      "type": "endEvent",
+      "name": "Отказ по поставщику",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "task_send_order",
+      "type": "sendTask",
+      "name": "Отправить заказ поставщику",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "task_receive_response",
+      "type": "receiveTask",
+      "name": "Получить ответ поставщика",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "gw_response_type",
+      "type": "exclusiveGateway",
+      "name": "Тип ответа?",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "task_register_reject",
+      "type": "task",
+      "name": "Зарегистрировать отказ",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "end_buyer_reject",
+      "type": "endEvent",
+      "name": "Завершение с отказом",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "task_receive_goods",
+      "type": "task",
+      "name": "Получить товар",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_initiator"
+    },
+    {
+      "id": "task_check_quality",
+      "type": "task",
+      "name": "Проверить качество",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_initiator"
+    },
+    {
+      "id": "gw_quality",
+      "type": "exclusiveGateway",
+      "name": "Качество приемлемо?",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_initiator"
+    },
+    {
+      "id": "task_send_claim",
+      "type": "sendTask",
+      "name": "Отправить претензию",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "task_wait_replacement",
+      "type": "task",
+      "name": "Ожидать и получить замену",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_initiator"
+    },
+    {
+      "id": "task_send_acceptance",
+      "type": "sendTask",
+      "name": "Отправить акт приёмки",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "gw_post_acceptance",
+      "type": "parallelGateway",
+      "name": "Параллельные действия после акта",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "task_receive_invoice",
+      "type": "receiveTask",
+      "name": "Ожидать и получить счёт",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_accountant"
+    },
+    {
+      "id": "task_register_goods",
+      "type": "task",
+      "name": "Поставить товар на учёт",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_initiator"
+    },
+    {
+      "id": "gw_join_post_acceptance",
+      "type": "parallelGateway",
+      "name": "Объединение после акта",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_accountant"
+    },
+    {
+      "id": "task_pay_invoice",
+      "type": "task",
+      "name": "Оплатить счёт",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_accountant"
+    },
+    {
+      "id": "task_send_payment_confirm",
+      "type": "sendTask",
+      "name": "Отправить подтверждение оплаты",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "end_buyer_success",
+      "type": "endEvent",
+      "name": "Успешное завершение покупателя",
+      "process_id": "proc_buyer",
+      "lane_id": "lane_specialist"
+    },
+    {
+      "id": "start_supplier",
+      "type": "startEvent",
+      "name": "Начало процесса поставщика",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_manager"
+    },
+    {
+      "id": "task_receive_order",
+      "type": "receiveTask",
+      "name": "Получить заказ",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_manager"
+    },
+    {
+      "id": "task_check_stock",
+      "type": "task",
+      "name": "Проверить наличие позиций",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_warehouse"
+    },
+    {
+      "id": "gw_stock",
+      "type": "exclusiveGateway",
+      "name": "Все позиции есть?",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_warehouse"
+    },
+    {
+      "id": "task_send_reject",
+      "type": "sendTask",
+      "name": "Отправить отказ покупателю",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_manager"
+    },
+    {
+      "id": "end_supplier_reject",
+      "type": "endEvent",
+      "name": "Завершение с отказом",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_manager"
+    },
+    {
+      "id": "task_send_confirm",
+      "type": "sendTask",
+      "name": "Отправить подтверждение заказа",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_manager"
+    },
+    {
+      "id": "task_pack_goods",
+      "type": "task",
+      "name": "Комплектовать товар",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_warehouse"
+    },
+    {
+      "id": "task_send_goods",
+      "type": "sendTask",
+      "name": "Отправить товар",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_warehouse"
+    },
+    {
+      "id": "task_wait_result",
+      "type": "task",
+      "name": "Ждать результат приёмки",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_manager"
+    },
+    {
+      "id": "gw_result_type",
+      "type": "exclusiveGateway",
+      "name": "Тип результата?",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_manager"
+    },
+    {
+      "id": "task_replace",
+      "type": "task",
+      "name": "Заменить бракованные позиции",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_warehouse"
+    },
+    {
+      "id": "task_send_replacement",
+      "type": "sendTask",
+      "name": "Отправить замену",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_warehouse"
+    },
+    {
+      "id": "task_send_invoice",
+      "type": "sendTask",
+      "name": "Выставить и отправить счёт",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_manager"
+    },
+    {
+      "id": "task_wait_payment",
+      "type": "receiveTask",
+      "name": "Ожидать подтверждение оплаты",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_manager"
+    },
+    {
+      "id": "end_supplier_success",
+      "type": "endEvent",
+      "name": "Успешное завершение поставщика",
+      "process_id": "proc_supplier",
+      "lane_id": "lane_manager"
+    }
+  ],
+  "flows": [
+    {
+      "id": "flow1",
+      "kind": "sequence",
+      "source": "start_buyer",
+      "target": "task_create_request",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow2",
+      "kind": "sequence",
+      "source": "task_create_request",
+      "target": "task_check_completeness",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow3",
+      "kind": "sequence",
+      "source": "task_check_completeness",
+      "target": "gw_completeness",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow4",
+      "kind": "sequence",
+      "source": "gw_completeness",
+      "target": "task_supplement",
+      "name": "Неполная",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow5",
+      "kind": "sequence",
+      "source": "task_supplement",
+      "target": "task_check_completeness",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow6",
+      "kind": "sequence",
+      "source": "gw_completeness",
+      "target": "gw_parallel_checks",
+      "name": "Полная",
+      "condition": null,
+      "is_default": true
+    },
+    {
+      "id": "flow7",
+      "kind": "sequence",
+      "source": "gw_parallel_checks",
+      "target": "task_check_budget",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow8",
+      "kind": "sequence",
+      "source": "gw_parallel_checks",
+      "target": "task_check_supplier",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow9",
+      "kind": "sequence",
+      "source": "task_check_budget",
+      "target": "gw_join_checks",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow10",
+      "kind": "sequence",
+      "source": "task_check_supplier",
+      "target": "gw_join_checks",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow11",
+      "kind": "sequence",
+      "source": "gw_join_checks",
+      "target": "gw_decision",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow12",
+      "kind": "sequence",
+      "source": "gw_decision",
+      "target": "end_reject_budget",
+      "name": "Бюджет недостаточен",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow13",
+      "kind": "sequence",
+      "source": "gw_decision",
+      "target": "end_reject_supplier",
+      "name": "Поставщик не одобрен",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow14",
+      "kind": "sequence",
+      "source": "gw_decision",
+      "target": "task_send_order",
+      "name": "Оба положительны",
+      "condition": null,
+      "is_default": true
+    },
+    {
+      "id": "flow15",
+      "kind": "sequence",
+      "source": "task_send_order",
+      "target": "task_receive_response",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow16",
+      "kind": "sequence",
+      "source": "task_receive_response",
+      "target": "gw_response_type",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow17",
+      "kind": "sequence",
+      "source": "gw_response_type",
+      "target": "task_register_reject",
+      "name": "Отказ",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow18",
+      "kind": "sequence",
+      "source": "task_register_reject",
+      "target": "end_buyer_reject",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow19",
+      "kind": "sequence",
+      "source": "gw_response_type",
+      "target": "task_receive_goods",
+      "name": "Подтверждение",
+      "condition": null,
+      "is_default": true
+    },
+    {
+      "id": "flow20",
+      "kind": "sequence",
+      "source": "task_receive_goods",
+      "target": "task_check_quality",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow21",
+      "kind": "sequence",
+      "source": "task_check_quality",
+      "target": "gw_quality",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow22",
+      "kind": "sequence",
+      "source": "gw_quality",
+      "target": "task_send_claim",
+      "name": "Брак",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow23",
+      "kind": "sequence",
+      "source": "task_send_claim",
+      "target": "task_wait_replacement",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow24",
+      "kind": "sequence",
+      "source": "task_wait_replacement",
+      "target": "task_check_quality",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow25",
+      "kind": "sequence",
+      "source": "gw_quality",
+      "target": "task_send_acceptance",
+      "name": "Качественно",
+      "condition": null,
+      "is_default": true
+    },
+    {
+      "id": "flow26",
+      "kind": "sequence",
+      "source": "task_send_acceptance",
+      "target": "gw_post_acceptance",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow27",
+      "kind": "sequence",
+      "source": "gw_post_acceptance",
+      "target": "task_receive_invoice",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow28",
+      "kind": "sequence",
+      "source": "gw_post_acceptance",
+      "target": "task_register_goods",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow29",
+      "kind": "sequence",
+      "source": "task_receive_invoice",
+      "target": "gw_join_post_acceptance",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow30",
+      "kind": "sequence",
+      "source": "task_register_goods",
+      "target": "gw_join_post_acceptance",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow31",
+      "kind": "sequence",
+      "source": "gw_join_post_acceptance",
+      "target": "task_pay_invoice",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow32",
+      "kind": "sequence",
+      "source": "task_pay_invoice",
+      "target": "task_send_payment_confirm",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow33",
+      "kind": "sequence",
+      "source": "task_send_payment_confirm",
+      "target": "end_buyer_success",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow40",
+      "kind": "sequence",
+      "source": "start_supplier",
+      "target": "task_receive_order",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow41",
+      "kind": "sequence",
+      "source": "task_receive_order",
+      "target": "task_check_stock",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow42",
+      "kind": "sequence",
+      "source": "task_check_stock",
+      "target": "gw_stock",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow43",
+      "kind": "sequence",
+      "source": "gw_stock",
+      "target": "task_send_reject",
+      "name": "Нет позиций",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow44",
+      "kind": "sequence",
+      "source": "task_send_reject",
+      "target": "end_supplier_reject",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow45",
+      "kind": "sequence",
+      "source": "gw_stock",
+      "target": "task_send_confirm",
+      "name": "Все есть",
+      "condition": null,
+      "is_default": true
+    },
+    {
+      "id": "flow46",
+      "kind": "sequence",
+      "source": "task_send_confirm",
+      "target": "task_pack_goods",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow47",
+      "kind": "sequence",
+      "source": "task_pack_goods",
+      "target": "task_send_goods",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow48",
+      "kind": "sequence",
+      "source": "task_send_goods",
+      "target": "task_wait_result",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow49",
+      "kind": "sequence",
+      "source": "task_wait_result",
+      "target": "gw_result_type",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow50",
+      "kind": "sequence",
+      "source": "gw_result_type",
+      "target": "task_replace",
+      "name": "Претензия",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow51",
+      "kind": "sequence",
+      "source": "task_replace",
+      "target": "task_send_replacement",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow52",
+      "kind": "sequence",
+      "source": "task_send_replacement",
+      "target": "task_wait_result",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow53",
+      "kind": "sequence",
+      "source": "gw_result_type",
+      "target": "task_send_invoice",
+      "name": "Акт приёмки",
+      "condition": null,
+      "is_default": true
+    },
+    {
+      "id": "flow54",
+      "kind": "sequence",
+      "source": "task_send_invoice",
+      "target": "task_wait_payment",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "flow55",
+      "kind": "sequence",
+      "source": "task_wait_payment",
+      "target": "end_supplier_success",
+      "name": "",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "msg_order",
+      "kind": "message",
+      "source": "task_send_order",
+      "target": "task_receive_order",
+      "name": "Заказ",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "msg_reject",
+      "kind": "message",
+      "source": "task_send_reject",
+      "target": "task_receive_response",
+      "name": "Отказ",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "msg_confirm",
+      "kind": "message",
+      "source": "task_send_confirm",
+      "target": "task_receive_response",
+      "name": "Подтверждение",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "msg_goods",
+      "kind": "message",
+      "source": "task_send_goods",
+      "target": "task_receive_goods",
+      "name": "Товар",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "msg_claim",
+      "kind": "message",
+      "source": "task_send_claim",
+      "target": "task_wait_result",
+      "name": "Претензия",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "msg_replacement",
+      "kind": "message",
+      "source": "task_send_replacement",
+      "target": "task_wait_replacement",
+      "name": "Замена",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "msg_acceptance",
+      "kind": "message",
+      "source": "task_send_acceptance",
+      "target": "task_wait_result",
+      "name": "Акт приёмки",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "msg_invoice",
+      "kind": "message",
+      "source": "task_send_invoice",
+      "target": "task_receive_invoice",
+      "name": "Счёт",
+      "condition": null,
+      "is_default": false
+    },
+    {
+      "id": "msg_payment",
+      "kind": "message",
+      "source": "task_send_payment_confirm",
+      "target": "task_wait_payment",
+      "name": "Подтверждение оплаты",
+      "condition": null,
+      "is_default": false
+    }
+  ],
+  "source_text": "Покупатель «Вектор» и поставщик «Орион» — две независимые организации с отдельными процессами. У покупателя работают инициатор, специалист снабжения и бухгалтер. У поставщика — менеджер и кладовщик.\nИнициатор создаёт заявку. Специалист снабжения проверяет комплектность. Если заявка неполная, инициатор дополняет её, затем специалист снова проверяет комплектность. По полной заявке одновременно выполняются две проверки: бухгалтер проверяет бюджет, специалист снабжения проверяет поставщика по реестру одобренных поставщиков. Дальнейшее решение принимается только после обеих проверок. Если бюджета недостаточно, заявка завершается отказом по бюджету независимо от результата проверки поставщика. Если бюджета достаточно, но поставщик не одобрен, заявка завершается отказом по поставщику. Если оба результата положительные, специалист отправляет заказ поставщику.\nПроцесс поставщика начинается с получения заказа менеджером. Кладовщик проверяет наличие всех позиций. Если хотя бы одной позиции нет, менеджер отправляет отказ покупателю и процесс поставщика завершается. Если всё есть, менеджер отправляет подтверждение заказа, кладовщик комплектует и отправляет товар.\nСпециалист снабжения покупателя получает ответ. При отказе он регистрирует отказ, и процесс покупателя завершается. При подтверждении инициатор получает товар и проверяет качество. При браке специалист отправляет претензию, инициатор ожидает и получает замену, затем снова проверяет качество. До успешной проверки нельзя оплачивать товар или ставить его на учёт.\nПосле каждой отправки товара менеджер поставщика ждёт либо претензию, либо акт приёмки. При претензии кладовщик заменяет бракованные позиции и снова отправляет товар, после чего менеджер снова ждёт результат приёмки. Число повторов не ограничено. При получении акта менеджер выставляет и отправляет счёт, затем ожидает подтверждение оплаты.\nЕсли товар качественный, специалист снабжения отправляет акт приёмки поставщику. После отправки акта параллельно бухгалтер ожидает и получает счёт, а инициатор ставит товар на внутренний учёт. Только после получения счёта и постановки на учёт бухгалтер оплачивает счёт. Затем специалист отправляет подтверждение оплаты, и процесс покупателя завершается успешно. После получения подтверждения оплаты менеджером процесс поставщика завершается успешно.\nПокажите отдельными обменами между организациями заказ, подтверждение или отказ, товар, претензию, акт приёмки, счёт и подтверждение оплаты. Не добавляйте сроки, отмены и другие неописанные исключения.",
+  "provenance": [
+    {
+      "element_id": "start_buyer",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "task_create_request",
+      "exact_quote": "Инициатор создаёт заявку",
+      "source_start": 199,
+      "source_end": 223,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_check_completeness",
+      "exact_quote": "Специалист снабжения проверяет комплектность",
+      "source_start": 225,
+      "source_end": 269,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "gw_completeness",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "task_supplement",
+      "exact_quote": "инициатор дополняет её",
+      "source_start": 293,
+      "source_end": 315,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "gw_parallel_checks",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "task_check_budget",
+      "exact_quote": "бухгалтер проверяет бюджет",
+      "source_start": 421,
+      "source_end": 447,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_check_supplier",
+      "exact_quote": "специалист снабжения проверяет поставщика по реестру одобренных поставщиков",
+      "source_start": 449,
+      "source_end": 524,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "gw_join_checks",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "gw_decision",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "end_reject_budget",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "end_reject_supplier",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "task_send_order",
+      "exact_quote": "специалист отправляет заказ поставщику",
+      "source_start": 824,
+      "source_end": 862,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_receive_response",
+      "exact_quote": "Специалист снабжения покупателя получает ответ",
+      "source_start": 1169,
+      "source_end": 1215,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "gw_response_type",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "task_register_reject",
+      "exact_quote": "он регистрирует отказ",
+      "source_start": 1228,
+      "source_end": 1249,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "end_buyer_reject",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "task_receive_goods",
+      "exact_quote": "инициатор получает товар",
+      "source_start": 1303,
+      "source_end": 1327,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_check_quality",
+      "exact_quote": "проверяет качество",
+      "source_start": 1330,
+      "source_end": 1348,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "gw_quality",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "task_send_claim",
+      "exact_quote": "специалист отправляет претензию",
+      "source_start": 1360,
+      "source_end": 1391,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_wait_replacement",
+      "exact_quote": "инициатор ожидает и получает замену",
+      "source_start": 1393,
+      "source_end": 1428,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_send_acceptance",
+      "exact_quote": "специалист снабжения отправляет акт приёмки поставщику",
+      "source_start": 1898,
+      "source_end": 1952,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "gw_post_acceptance",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "task_receive_invoice",
+      "exact_quote": "бухгалтер ожидает и получает счёт",
+      "source_start": 1986,
+      "source_end": 2019,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_register_goods",
+      "exact_quote": "инициатор ставит товар на внутренний учёт",
+      "source_start": 2023,
+      "source_end": 2064,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "gw_join_post_acceptance",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "task_pay_invoice",
+      "exact_quote": "бухгалтер оплачивает счёт",
+      "source_start": 2116,
+      "source_end": 2141,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_send_payment_confirm",
+      "exact_quote": "специалист отправляет подтверждение оплаты",
+      "source_start": 2149,
+      "source_end": 2191,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "end_buyer_success",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "start_supplier",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "task_receive_order",
+      "exact_quote": "Процесс поставщика начинается с получения заказа менеджером",
+      "source_start": 864,
+      "source_end": 923,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_check_stock",
+      "exact_quote": "Кладовщик проверяет наличие всех позиций",
+      "source_start": 925,
+      "source_end": 965,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "gw_stock",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "task_send_reject",
+      "exact_quote": "менеджер отправляет отказ покупателю",
+      "source_start": 999,
+      "source_end": 1035,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "end_supplier_reject",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "task_send_confirm",
+      "exact_quote": "менеджер отправляет подтверждение заказа",
+      "source_start": 1085,
+      "source_end": 1125,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_pack_goods",
+      "exact_quote": "кладовщик комплектует",
+      "source_start": 1127,
+      "source_end": 1148,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_send_goods",
+      "exact_quote": "отправляет товар",
+      "source_start": 1151,
+      "source_end": 1167,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_wait_result",
+      "exact_quote": "менеджер поставщика ждёт либо претензию, либо акт приёмки",
+      "source_start": 1561,
+      "source_end": 1618,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "gw_result_type",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    },
+    {
+      "element_id": "task_replace",
+      "exact_quote": "кладовщик заменяет бракованные позиции",
+      "source_start": 1634,
+      "source_end": 1672,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_send_replacement",
+      "exact_quote": "снова отправляет товар",
+      "source_start": 1675,
+      "source_end": 1697,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_send_invoice",
+      "exact_quote": "менеджер выставляет и отправляет счёт",
+      "source_start": 1798,
+      "source_end": 1835,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "task_wait_payment",
+      "exact_quote": "затем ожидает подтверждение оплаты",
+      "source_start": 1837,
+      "source_end": 1871,
+      "origin": "explicit"
+    },
+    {
+      "element_id": "end_supplier_success",
+      "exact_quote": "",
+      "source_start": null,
+      "source_end": null,
+      "origin": "structural"
+    }
+  ],
+  "questions": [],
+  "assumptions": []
+}

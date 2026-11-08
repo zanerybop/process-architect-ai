@@ -1,0 +1,13 @@
+# Ручная синтетическая fixture: не результат LLM.
+bpmn.process(id="p13", name="Анализ файла и отчёт")
+bpmn.pool(id="p13_pool", name="Обработка файла", process_id="p13")
+bpmn.lane(id="p13_analyst", process_id="p13", name="Аналитик")
+bpmn.start(id="p13_start", process_id="p13", lane_id="p13_analyst", name="Начало")
+bpmn.task(id="p13_receive", process_id="p13", lane_id="p13_analyst", name="Получить файл «План & факт <2026>»", source_quote="Аналитик получает файл с названием «План & факт <2026>»")
+bpmn.task(id="p13_check", process_id="p13", lane_id="p13_analyst", name="Проверить поле «Доход > Расход»", source_quote="проверяет поле «Доход > Расход»")
+bpmn.task(id="p13_save", process_id="p13", lane_id="p13_analyst", name='Сохранить результат в отчёт «Анализ "Север"»', source_quote='сохраняет результат в отчёт «Анализ "Север"»')
+bpmn.end(id="p13_end", process_id="p13", lane_id="p13_analyst", name="Завершено")
+bpmn.flow(id="p13_f1", source="p13_start", target="p13_receive")
+bpmn.flow(id="p13_f2", source="p13_receive", target="p13_check")
+bpmn.flow(id="p13_f3", source="p13_check", target="p13_save")
+bpmn.flow(id="p13_f4", source="p13_save", target="p13_end")

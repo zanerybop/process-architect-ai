@@ -1,0 +1,118 @@
+const labels: Record<string, string> = {
+  'Activate hand tool': 'Перемещение холста',
+  'Activate lasso tool': 'Выделение рамкой',
+  'Activate create/remove space tool': 'Добавить или убрать пространство',
+  'Activate global connect tool': 'Соединить элементы',
+  'Create start event': 'Добавить начальное событие',
+  'Create end event': 'Добавить конечное событие',
+  'Create intermediate/boundary event': 'Добавить промежуточное или граничное событие',
+  'Create gateway': 'Добавить шлюз',
+  'Create task': 'Добавить задачу',
+  'Create data object reference': 'Добавить объект данных',
+  'Create data store reference': 'Добавить хранилище данных',
+  'Create expanded sub-process': 'Добавить раскрытый подпроцесс',
+  'Create pool/participant': 'Добавить пул участника',
+  'Create group': 'Добавить группу',
+  'Append end event': 'Добавить конечное событие',
+  'Append gateway': 'Добавить шлюз',
+  'Append task': 'Добавить задачу',
+  'Append receive task': 'Добавить задачу получения',
+  'Append intermediate/boundary event': 'Добавить промежуточное событие',
+  'Append message intermediate catch event': 'Добавить событие получения сообщения',
+  'Append timer intermediate catch event': 'Добавить событие таймера',
+  'Append conditional intermediate catch event': 'Добавить условное событие',
+  'Append signal intermediate catch event': 'Добавить событие сигнала',
+  'Append compensation activity': 'Добавить действие компенсации',
+  'Change element': 'Изменить тип элемента',
+  'Connect to other element': 'Соединить с другим элементом',
+  'Connect using association': 'Соединить ассоциацией',
+  'Connect using data input association': 'Связать входные данные',
+  'Add text annotation': 'Добавить примечание',
+  'Remove': 'Удалить',
+  'Delete': 'Удалить',
+  'Add lane above': 'Добавить дорожку сверху',
+  'Add lane below': 'Добавить дорожку снизу',
+  'Divide into two lanes': 'Разделить на две дорожки',
+  'Divide into three lanes': 'Разделить на три дорожки',
+  'Task': 'Задача',
+  'User task': 'Пользовательская задача',
+  'Service task': 'Сервисная задача',
+  'Send task': 'Отправка',
+  'Receive task': 'Получение',
+  'Manual task': 'Ручная задача',
+  'Business rule task': 'Бизнес-правило',
+  'Script task': 'Скрипт',
+  'Call activity': 'Вызов процесса',
+  'Transaction': 'Транзакция',
+  'Event sub-process': 'Событийный подпроцесс',
+  'Sub-process (collapsed)': 'Свёрнутый подпроцесс',
+  'Sub-process (expanded)': 'Раскрытый подпроцесс',
+  'Sub-process': 'Подпроцесс',
+  'Ad-hoc sub-process': 'Нерегламентированный подпроцесс',
+  'Ad-hoc sub-process (collapsed)': 'Свёрнутый нерегламентированный подпроцесс',
+  'Ad-hoc sub-process (expanded)': 'Раскрытый нерегламентированный подпроцесс',
+  'Start event': 'Начальное событие',
+  'End event': 'Конечное событие',
+  'Boundary event': 'Граничное событие',
+  'Intermediate throw event': 'Промежуточное событие',
+  'Intermediate throwing event': 'Промежуточное событие',
+  'Exclusive gateway': 'Исключающий шлюз (XOR)',
+  'Parallel gateway': 'Параллельный шлюз (AND)',
+  'Inclusive gateway': 'Включающий шлюз',
+  'Complex gateway': 'Комплексный шлюз',
+  'Event-based gateway': 'Событийный шлюз',
+  'Sequence flow': 'Поток управления',
+  'Default flow': 'Поток по умолчанию',
+  'Conditional flow': 'Условный поток',
+  'Message flow': 'Поток сообщений',
+  'Participant': 'Участник',
+  'Expanded pool': 'Раскрытый пул',
+  'Collapsed pool': 'Свёрнутый пул',
+  'Expanded pool/participant': 'Раскрытый пул участника',
+  'Empty pool/participant': 'Пустой пул участника',
+  'Data store reference': 'Хранилище данных',
+  'Data object reference': 'Объект данных',
+  'Activities': 'Действия',
+  'Events': 'События',
+  'Gateways': 'Шлюзы',
+  'Participants': 'Участники',
+  'More': 'Ещё',
+  'Loop': 'Цикл',
+  'Parallel multi-instance': 'Параллельные экземпляры',
+  'Sequential multi-instance': 'Последовательные экземпляры',
+  'Compensation': 'Компенсация',
+  'Search': 'Поиск',
+  'Search...': 'Поиск…',
+  'No results found': 'Ничего не найдено',
+  'No entries found': 'Ничего не найдено',
+  'Change type': 'Изменить тип',
+  'Create element': 'Добавить элемент',
+  'Append element': 'Добавить элемент',
+  'Open minimap': 'Открыть мини-карту',
+  'Close minimap': 'Закрыть мини-карту',
+};
+
+export function translate(template: string, replacements: Record<string, unknown> = {}): string {
+  let text = labels[template];
+  if (!text) {
+    // Translate the regular event catalog, including types outside the MVP that
+    // the technical validator will explicitly reject if manually introduced.
+    const kinds: Record<string, string> = {
+      Message: 'Сообщение', Timer: 'Таймер', Signal: 'Сигнал', Conditional: 'Условие',
+      Error: 'Ошибка', Escalation: 'Эскалация', Cancel: 'Отмена', Compensation: 'Компенсация',
+      Link: 'Ссылка', Terminate: 'Прерывание', Multiple: 'Множественное', 'Parallel multiple': 'Параллельное',
+    };
+    const event = template.match(/^(.+?) (start|end|intermediate catch|intermediate throw|boundary) event(.*)$/i);
+    if (event && kinds[event[1]]) {
+      const phase: Record<string, string> = {
+        start: 'начальное событие', end: 'конечное событие',
+        'intermediate catch': 'ожидание', 'intermediate throw': 'отправка', boundary: 'граничное событие',
+      };
+      text = `${kinds[event[1]]}: ${phase[event[2].toLowerCase()]}`;
+      if (event[3].includes('non-interrupting')) text += ' (непрерывающее)';
+    }
+  }
+  return (text || template).replace(/\{([^}]+)\}/g, (match, key: string) => String(replacements[key] ?? match));
+}
+
+export const translationModule = { translate: ['value', translate] };

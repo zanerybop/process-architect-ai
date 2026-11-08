@@ -1,0 +1,22 @@
+{
+  "id": "F04_data_io_resources",
+  "title": "Входы и выходы архивирования с ресурсом исполнителя",
+  "features": [
+    "itemDefinition",
+    "dataObjectReference",
+    "dataStoreReference",
+    "ioSpecification",
+    "data associations",
+    "potentialOwner",
+    "resource",
+    "annotation",
+    "group"
+  ],
+  "origin": "curated_agent_authored_fixture",
+  "model_requests": 0,
+  "expected_status": "ready",
+  "expected_behavior": "inconclusive",
+  "source_sha256": "a77ca2bf41d0858f9ba24c2d33e33df0cbdf974b8e59b46119179ea68e2e9c94",
+  "python_sha256": "d267a107e6157f8575ce0facea3b25c6cd1b77c7aa0b84e6792a88521c284618",
+  "scope": "Deterministic standard notation support; not evidence of LLM quality."
+}

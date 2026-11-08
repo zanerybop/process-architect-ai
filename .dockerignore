@@ -1,0 +1,11 @@
+.venv
+.venv-tts
+**/node_modules
+**/__pycache__
+.env
+.env.*
+local_data
+artifacts
+.git
+frontend/dist
+frontend/test-results
